@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" shape-rendering="crispEdges">
+<!-- dirt base -->
+<rect width="16" height="16" fill="#795548"/>
+<!-- pixel dirt variation -->
+<path fill="#6d4c41" d="M0 5h2v2H0zM5 8h2v2H5zM11 6h2v2h-2zM14 11h2v2h-2zM2 13h2v2H2zM8 14h2v2H8z"/>
+<path fill="#8d6e63" d="M3 7h2v1H3zM9 10h2v1H9zM12 14h2v1h-2zM6 3h2v1H6z"/>
+<!-- grass cap -->
+<path fill="#4f8f3a" d="M0 0h16v4H0z"/>
+<path fill="#63a847" d="M0 0h3v2H0zM5 1h3v2H5zM10 0h4v2h-4zM15 2h1v2h-1z"/>
+<path fill="#3f7d32" d="M3 3h2v1H3zM8 2h2v2H8zM13 3h2v1h-2z"/>
+</svg>
