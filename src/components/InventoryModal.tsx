@@ -253,12 +253,12 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({
             {/* Backpack Section */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Backpack (27 Slots)</span>
-                <span className="text-xs text-slate-500">Click item to move to hotbar</span>
+                <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Backpack ({inventory.backpack.length} Slots)</span>
+                <span className="text-xs text-slate-500">Click item to swap with active hotbar slot</span>
               </div>
 
-              {/* 3x9 Grid */}
-              <div className="grid grid-cols-9 gap-1.5 p-2 bg-black/40 rounded-xl border border-white/10">
+              {/* 4x9 Grid for 36 slots */}
+              <div className="grid grid-cols-9 gap-1.5 p-2 bg-black/40 rounded-xl border border-white/10 max-h-[260px] overflow-y-auto">
                 {inventory.backpack.map((slot, idx) => {
                   const def = slot ? ITEM_DEFS[slot.itemId] : null;
 

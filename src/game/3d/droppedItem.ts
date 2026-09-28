@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { World3D } from './world3d';
 import { BlockType, BLOCK_DEFS } from './blocks';
 import { ITEM_DEFS } from './resources';
+import { createHeldItemMesh } from './resourceRegistry';
 
 export interface DroppedItem {
   id: number;
@@ -38,50 +39,8 @@ export class DroppedItemManager {
     const def = ITEM_DEFS[itemId];
     if (!def) return;
 
-    let mesh: THREE.Object3D;
-
-    if (itemId === 'torch') {
-      // Slender torch miniature
-      const group = new THREE.Group();
-      const stick = new THREE.Mesh(
-        new THREE.BoxGeometry(0.06, 0.24, 0.06),
-        new THREE.MeshStandardMaterial({ color: 0x5c3d23, roughness: 0.8 })
-      );
-      group.add(stick);
-      const flame = new THREE.Mesh(
-        new THREE.BoxGeometry(0.08, 0.08, 0.08),
-        new THREE.MeshBasicMaterial({ color: 0xfbbf24 })
-      );
-      flame.position.y = 0.12;
-      group.add(flame);
-      mesh = group;
-    } else if (def.toolType) {
-      // Mini tool
-      const group = new THREE.Group();
-      const handle = new THREE.Mesh(
-        new THREE.BoxGeometry(0.04, 0.28, 0.04),
-        new THREE.MeshStandardMaterial({ color: 0x5c3d23 })
-      );
-      group.add(handle);
-      const head = new THREE.Mesh(
-        new THREE.BoxGeometry(0.18, 0.06, 0.06),
-        new THREE.MeshStandardMaterial({ color: def.color, metalness: 0.4 })
-      );
-      head.position.y = 0.12;
-      group.add(head);
-      group.rotation.z = Math.PI / 4;
-      mesh = group;
-    } else {
-      // Mini voxel block
-      const geo = new THREE.BoxGeometry(0.26, 0.26, 0.26);
-      const mat = new THREE.MeshStandardMaterial({
-        color: def.color,
-        roughness: 0.8,
-        metalness: 0.1,
-      });
-      mesh = new THREE.Mesh(geo, mat);
-    }
-
+    // Use centralized resource pack resolver to render dropped item mesh
+    const mesh = createHeldItemMesh(itemId, 0.26);
     mesh.position.set(x, y, z);
     mesh.castShadow = true;
     this.scene.add(mesh);

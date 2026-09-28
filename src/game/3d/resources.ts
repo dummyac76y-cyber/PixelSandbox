@@ -241,7 +241,7 @@ export function blockTypeToItemId(block: BlockType): string {
 
 export class PlayerInventory {
   hotbar: (InventorySlot | null)[] = new Array(9).fill(null);
-  backpack: (InventorySlot | null)[] = new Array(27).fill(null);
+  backpack: (InventorySlot | null)[] = new Array(36).fill(null);
   selectedSlot = 0;
   private saveKey = 'pixel_sandbox_3d_inventory';
 
@@ -255,7 +255,13 @@ export class PlayerInventory {
       if (data) {
         const parsed = JSON.parse(data);
         if (Array.isArray(parsed.hotbar)) this.hotbar = parsed.hotbar;
-        if (Array.isArray(parsed.backpack)) this.backpack = parsed.backpack;
+        if (Array.isArray(parsed.backpack)) {
+          this.backpack = parsed.backpack;
+          // Ensure backpack has 36 slots
+          while (this.backpack.length < 36) {
+            this.backpack.push(null);
+          }
+        }
         if (typeof parsed.selectedSlot === 'number') this.selectedSlot = parsed.selectedSlot;
         return;
       }

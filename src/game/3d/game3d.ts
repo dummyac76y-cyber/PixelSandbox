@@ -10,6 +10,7 @@ import { raycastVoxels, VoxelRaycastHit } from './raycast';
 import { BlockType, BLOCK_DEFS } from './blocks';
 import { PlayerModel3D } from './playerModel';
 import { DroppedItemManager } from './droppedItem';
+import { initializeResourceRegistry } from './resourceRegistry';
 
 export type CameraViewMode = 'first' | 'third' | 'isometric';
 
@@ -84,6 +85,11 @@ export class Game3D {
     const spawn = this.renderer.world.getSpawnPosition();
     this.physics = new PhysicsController(this.renderer.world, spawn);
     this.controls = new Controls3D(this.renderer.canvas);
+
+    // Initialize tinted composite icons (Grass Block, Oak Leaves)
+    initializeResourceRegistry().then(() => {
+      this.updateHandItem();
+    });
 
     this.bindControls();
     this.updateHandItem();
