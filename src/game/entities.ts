@@ -278,6 +278,16 @@ export class Player {
       this.animTimer = 0;
       this.animFrame = (this.animFrame + 1) % 4;
     }
+
+    // Safety net: never stay stuck inside solid geometry (e.g. after
+    // knockback, spawning into a wall, or blocks placed around us)
+    if (world.checkCollision(this.getHurtbox())) {
+      const free = world.unstick(this.getHurtbox());
+      const ox = (this.width - this.hurtboxW) / 2;
+      const oy = this.height - this.hurtboxH;
+      this.x = free.x - ox;
+      this.y = free.y - oy;
+    }
   }
 
   private handleMovement(input: { x: number; y: number }, world: World): void {
@@ -300,16 +310,12 @@ export class Player {
       }
     }
 
-    // Apply velocity with collision (separate axes)
+    // Apply velocity with collision (separate axes, with wall sliding/snapping)
     const hb = this.getHurtbox();
-    const newRectX = { ...hb, x: hb.x + this.vx };
-    if (!world.checkCollision(newRectX)) {
-      this.x += this.vx;
-    }
-    const newRectY = { ...this.getHurtbox(), y: this.getHurtbox().y + this.vy };
-    if (!world.checkCollision(newRectY)) {
-      this.y += this.vy;
-    }
+    const newX = world.resolveX(hb, this.vx);
+    this.x += newX - hb.x;
+    const newY = world.resolveY(this.getHurtbox(), this.vy);
+    this.y += newY - this.getHurtbox().y;
 
     // Infinite world - no bounds clamping needed
   }
@@ -578,12 +584,9 @@ export class Enemy {
         this.y += this.knockbackVy;
         this.knockbackVx *= 0.7;
         this.knockbackVy *= 0.7;
-        // Resolve collision
-        const hb = this.getRect();
-        const newRx = { ...hb, x: hb.x + this.knockbackVx };
-        if (!world.checkCollision(newRx)) this.x += this.knockbackVx;
-        const newRy = { ...this.getRect(), y: this.getRect().y + this.knockbackVy };
-        if (!world.checkCollision(newRy)) this.y += this.knockbackVy;
+        // Resolve collision (snap to walls instead of hard-stopping)
+        this.x = world.resolveX(this.getRect(), this.knockbackVx);
+        this.y = world.resolveY(this.getRect(), this.knockbackVy);
 
         if (this.hurtTimer <= 0) {
           this.state = EnemyState.CHASE;
@@ -667,13 +670,11 @@ export class Enemy {
         break;
 
       case EnemyType.CHARGER:
-        // Dash
+        // Dash (resolve with wall snapping)
         this.vx = this.chargeDir.x * this.chargeSpeed;
         this.vy = this.chargeDir.y * this.chargeSpeed;
-        const newRx = { ...this.getRect(), x: this.getRect().x + this.vx };
-        if (!world.checkCollision(newRx)) this.x += this.vx;
-        const newRy = { ...this.getRect(), y: this.getRect().y + this.vy };
-        if (!world.checkCollision(newRy)) this.y += this.vy;
+        this.x = world.resolveX(this.getRect(), this.vx);
+        this.y = world.resolveY(this.getRect(), this.vy);
         // Check hit
         if (aabbOverlap(this.getRect(), player.getHurtbox())) {
           player.takeDamage(this.damage, this.x, this.y, audio);
@@ -699,10 +700,8 @@ export class Enemy {
         if (this.type === EnemyType.BOSS && this.phase === 2 && this.attackDuration > 15) {
           this.vx = this.chargeDir.x * this.chargeSpeed;
           this.vy = this.chargeDir.y * this.chargeSpeed;
-          const brx = { ...this.getRect(), x: this.getRect().x + this.vx };
-          if (!world.checkCollision(brx)) this.x += this.vx;
-          const bry = { ...this.getRect(), y: this.getRect().y + this.vy };
-          if (!world.checkCollision(bry)) this.y += this.vy;
+          this.x = world.resolveX(this.getRect(), this.vx);
+          this.y = world.resolveY(this.getRect(), this.vy);
         }
         break;
     }
@@ -743,16 +742,9 @@ export class Enemy {
       moveY += perpY * Math.sin(this.sineOffset) * 0.5;
     }
 
-    // Apply with collision
-    const rect = this.getRect();
-    const newRx = { ...rect, x: rect.x + moveX };
-    if (!world.checkCollision(newRx)) {
-      this.x += moveX;
-    }
-    const newRy = { ...this.getRect(), y: this.getRect().y + moveY };
-    if (!world.checkCollision(newRy)) {
-      this.y += moveY;
-    }
+    // Apply with collision (resolveX/Y snaps to walls and pushes out if stuck)
+    this.x = world.resolveX(this.getRect(), moveX);
+    this.y = world.resolveY(this.getRect(), moveY);
 
     this.updateFacing(tx, ty);
   }
