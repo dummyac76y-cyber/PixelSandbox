@@ -1,7 +1,7 @@
 import React from 'react';
 import { Game3DState } from '../game/3d/game3d';
 import { PlayerInventory, ITEM_DEFS } from '../game/3d/resources';
-import { getItemSprite } from '../game/3d/iconGenerator';
+import { getItemSprite, getItemFallbackSprite } from '../game/3d/iconGenerator';
 import {
   Compass,
   Sun,
@@ -9,28 +9,8 @@ import {
   Sparkles,
   Package,
   Settings,
-  Flame,
-  Box,
-  Layers,
-  Sword,
-  BookOpen,
-  Gem,
-  Hammer,
-  TreePine,
-  Leaf,
-  Maximize2,
-  Grid,
-  LayoutGrid,
   Eye,
 } from 'lucide-react';
-
-const PickaxeIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-  <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="m3 21 11-11" />
-    <path d="m13 4 7 7" />
-    <path d="M14 3a16.5 16.5 0 0 1 7 7" />
-  </svg>
-);
 
 interface HUDProps {
   state: Game3DState | null;
@@ -40,26 +20,6 @@ interface HUDProps {
   onOpenSettings: () => void;
   onToggleFly: () => void;
   onCycleCameraMode: () => void;
-}
-
-// Icon mapper for items
-function getItemIcon(iconName: string, color: string) {
-  const props = { className: 'w-6 h-6 shrink-0', style: { color } };
-  switch (iconName) {
-    case 'Pickaxe': return <PickaxeIcon {...props} />;
-    case 'Sword': return <Sword {...props} />;
-    case 'TreePine': return <TreePine {...props} />;
-    case 'Leaf': return <Leaf {...props} />;
-    case 'Flame': return <Flame {...props} />;
-    case 'Gem': return <Gem {...props} />;
-    case 'Hammer': return <Hammer {...props} />;
-    case 'BookOpen': return <BookOpen {...props} />;
-    case 'Maximize2': return <Maximize2 {...props} />;
-    case 'Grid': return <Grid {...props} />;
-    case 'LayoutGrid': return <LayoutGrid {...props} />;
-    case 'Layers': return <Layers {...props} />;
-    default: return <Box {...props} />;
-  }
 }
 
 export const HUD: React.FC<HUDProps> = ({
@@ -212,11 +172,14 @@ export const HUD: React.FC<HUDProps> = ({
                   {idx + 1}
                 </span>
 
-                {/* 32x32 indie pixel-art item / block sprite */}
+                {/* 32x32 item / block sprite */}
                 {slot && itemDef && (
                   <div className="relative w-8 h-8 md:w-9 md:h-9 flex items-center justify-center">
                     <img
                       src={getItemSprite(slot.itemId)}
+                      onError={(e) => {
+                        e.currentTarget.src = getItemFallbackSprite(slot.itemId);
+                      }}
                       alt={itemDef.name}
                       className="w-full h-full object-contain [image-rendering:pixelated] select-none pointer-events-none drop-shadow-md"
                     />

@@ -4,19 +4,13 @@ import {
   ITEM_DEFS,
   CRAFTING_RECIPES,
   CraftingRecipe,
-  ItemCategory,
 } from '../game/3d/resources';
-import { getItemSprite } from '../game/3d/iconGenerator';
+import { getItemSprite, getItemFallbackSprite } from '../game/3d/iconGenerator';
 import { AudioManager } from '../game/audio';
 import {
   X,
   Hammer,
-  Box,
-  Flame,
-  Layers,
   Sparkles,
-  ChevronRight,
-  ShieldAlert,
 } from 'lucide-react';
 
 interface InventoryModalProps {
@@ -130,7 +124,6 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({
               {filteredRecipes.map((recipe) => {
                 const canCraft = inventory.canCraft(recipe);
                 const isSelected = selectedRecipe?.id === recipe.id;
-                const resultDef = ITEM_DEFS[recipe.resultId];
 
                 return (
                   <button
@@ -149,6 +142,9 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({
                       <div className="relative w-8 h-8 rounded-lg bg-black/40 border border-white/15 flex items-center justify-center p-0.5 shrink-0">
                         <img
                           src={getItemSprite(recipe.resultId)}
+                          onError={(e) => {
+                            e.currentTarget.src = getItemFallbackSprite(recipe.resultId);
+                          }}
                           alt={recipe.name}
                           className="w-full h-full object-contain [image-rendering:pixelated]"
                         />
@@ -196,6 +192,9 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({
                   <div className="relative w-11 h-11 rounded-lg bg-black/50 flex items-center justify-center p-1 border border-white/20 shadow-md shrink-0">
                     <img
                       src={getItemSprite(selectedRecipe.resultId)}
+                      onError={(e) => {
+                        e.currentTarget.src = getItemFallbackSprite(selectedRecipe.resultId);
+                      }}
                       alt={selectedRecipe.name}
                       className="w-full h-full object-contain [image-rendering:pixelated]"
                     />
@@ -218,6 +217,9 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({
                         <div className="flex items-center gap-1.5">
                           <img
                             src={getItemSprite(req.itemId)}
+                            onError={(e) => {
+                              e.currentTarget.src = getItemFallbackSprite(req.itemId);
+                            }}
                             alt={def?.name || req.itemId}
                             className="w-4 h-4 object-contain [image-rendering:pixelated]"
                           />
@@ -283,6 +285,9 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({
                         >
                           <img
                             src={getItemSprite(slot.itemId)}
+                            onError={(e) => {
+                              e.currentTarget.src = getItemFallbackSprite(slot.itemId);
+                            }}
                             alt={def.name}
                             className="w-full h-full object-contain [image-rendering:pixelated] select-none pointer-events-none drop-shadow-sm"
                           />
@@ -338,6 +343,9 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({
                         >
                           <img
                             src={getItemSprite(slot.itemId)}
+                            onError={(e) => {
+                              e.currentTarget.src = getItemFallbackSprite(slot.itemId);
+                            }}
                             alt={def.name}
                             className="w-full h-full object-contain [image-rendering:pixelated] select-none pointer-events-none drop-shadow-sm"
                           />

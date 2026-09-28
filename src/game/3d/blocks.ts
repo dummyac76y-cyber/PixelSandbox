@@ -58,13 +58,18 @@ export const BLOCK_DEFS: Record<BlockType, BlockDef> = {
   [BlockType.GOLD_ORE]: { id: BlockType.GOLD_ORE, name: 'Gold Ore', hardness: 2.8, soundType: 'stone', dropId: BlockType.GOLD_ORE, dropCount: 1, textures: [15,15,15,15,15,15], color: '#ffd54f' },
   [BlockType.DIAMOND_ORE]: { id: BlockType.DIAMOND_ORE, name: 'Diamond Ore', hardness: 3.2, soundType: 'stone', dropId: BlockType.DIAMOND_ORE, dropCount: 1, textures: [16,16,16,16,16,16], color: '#00e5ff' },
   [BlockType.TORCH]: { id: BlockType.TORCH, name: 'Torch', hardness: 0.1, soundType: 'wood', transparent: true, lightLevel: 14, dropId: BlockType.TORCH, dropCount: 1, textures: [17,17,17,17,17,17], color: '#ffb300' },
-  [BlockType.CRAFTING_TABLE]: { id: BlockType.CRAFTING_TABLE, name: 'Crafting Table', hardness: 1.5, soundType: 'wood', dropId: BlockType.CRAFTING_TABLE, dropCount: 1, textures: [18,8,19,19,19,19], color: '#8d6e63' },
+  [BlockType.CRAFTING_TABLE]: { id: BlockType.CRAFTING_TABLE, name: 'Crafting Table', hardness: 1.5, soundType: 'wood', dropId: BlockType.CRAFTING_TABLE, dropCount: 1, textures: [18,8,19,19,23,19], color: '#8d6e63' },
   [BlockType.BOOKSHELF]: { id: BlockType.BOOKSHELF, name: 'Bookshelf', hardness: 1.2, soundType: 'wood', dropId: BlockType.BOOKSHELF, dropCount: 1, textures: [8,8,20,20,20,20], color: '#a1887f' },
   [BlockType.SNOW]: { id: BlockType.SNOW, name: 'Snow Block', hardness: 0.4, soundType: 'dirt', dropId: BlockType.SNOW, dropCount: 1, textures: [21,2,21,21,21,21], color: '#ffffff' },
   [BlockType.STONE_BRICKS]: { id: BlockType.STONE_BRICKS, name: 'Stone Bricks', hardness: 1.8, soundType: 'stone', dropId: BlockType.STONE_BRICKS, dropCount: 1, textures: [22,22,22,22,22,22], color: '#757575' },
 };
 
-export function createVoxelTextureAtlas(): { texture: THREE.CanvasTexture; material: THREE.MeshStandardMaterial; waterMaterial: THREE.MeshStandardMaterial } {
+export function createVoxelTextureAtlas(): {
+  texture: THREE.CanvasTexture;
+  material: THREE.MeshStandardMaterial;
+  waterMaterial: THREE.MeshStandardMaterial;
+  readyPromise: Promise<void>;
+} {
   const tileSize = 16;
   const atlasCols = 8;
   const atlasRows = 8;
@@ -83,6 +88,7 @@ export function createVoxelTextureAtlas(): { texture: THREE.CanvasTexture; mater
     ctx.restore();
   }
 
+  // Pre-render procedural fallback textures for all atlas tiles so blocks are never invisible
   drawTile(0, (c) => {
     c.fillStyle = '#4ca64c'; c.fillRect(0,0,16,16);
     const greens = ['#3f923f','#56b856','#439d43','#5bc25b','#368136'];
@@ -147,38 +153,74 @@ export function createVoxelTextureAtlas(): { texture: THREE.CanvasTexture; mater
   drawTile(20, (c) => {c.fillStyle='#b88a44';c.fillRect(0,0,16,16);const bookColors=['#d32f2f','#1976d2','#388e3c','#fbc02d','#7b1fa2','#e64a19'];for(const rowY of [2,9]){c.fillStyle='#3e2723';c.fillRect(1,rowY,14,5);let bx=2,ci=0;while(bx<14){const bw=Math.min(2,14-bx);c.fillStyle=bookColors[ci%bookColors.length];c.fillRect(bx,rowY+1,bw,4);c.fillStyle='#fff';c.fillRect(bx,rowY+2,1,1);bx+=bw+1;ci++;}}});
   drawTile(21, (c) => {c.fillStyle='#f5f5f5';c.fillRect(0,0,16,16);c.fillStyle='#fff';for(let py=0;py<16;py++)for(let px=0;px<16;px++)if((px+py)%2===0)c.fillRect(px,py,1,1);c.fillStyle='#e0e0e0';c.fillRect(3,4,1,1);c.fillRect(11,8,1,1);});
   drawTile(22, (c) => {c.fillStyle='#4a4a4a';c.fillRect(0,0,16,16);for(let row=0;row<2;row++){const y=row*8,off=row*4;for(let col=-1;col<3;col++){const x=col*8+off;c.fillStyle='#7a7a7a';c.fillRect(x,y,7,7);c.fillStyle='#949494';c.fillRect(x,y,6,1);c.fillStyle='#616161';c.fillRect(x,y+6,7,1);}}});
+  drawTile(23, (c) => {
+    c.fillStyle='#b88a44';c.fillRect(0,0,16,16);c.fillStyle='#5c4033';c.fillRect(1,1,14,14);c.fillStyle='#b88a44';c.fillRect(2,2,12,12);c.fillStyle='#3e2723';c.fillRect(4,4,8,8);
+  });
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.magFilter = THREE.NearestFilter;
   texture.minFilter = THREE.NearestFilter;
   texture.generateMipmaps = false;
 
-  // Replace the procedural grass tiles with the actual SVG resources from public/assets/blocks.
-  // This keeps the existing atlas/UV system intact while making the committed SVGs the real in-game textures.
-  const grassAssets: Array<[number, string]> = [
-    [0, '/assets/blocks/grass_block_top.svg'],
-    [1, '/assets/blocks/grass_block_side.svg'],
-    [2, '/assets/blocks/grass_block_bottom.svg'],
+  // Real PNG block resource mappings (with fallback SVGs if PNG fails)
+  const blockAssets: Array<[number, string[]]> = [
+    [0, ['/assets/resources/blocks/grass_block_top.png', '/assets/blocks/grass_block_top.svg']],
+    [1, ['/assets/resources/blocks/grass_block_side.png', '/assets/blocks/grass_block_side.svg']],
+    [2, ['/assets/resources/blocks/dirt.png', '/assets/blocks/grass_block_bottom.svg']],
+    [3, ['/assets/resources/blocks/stone.png']],
+    [4, ['/assets/resources/blocks/cobblestone.png']],
+    [5, ['/assets/resources/blocks/oak_log.png']],
+    [6, ['/assets/resources/blocks/oak_log_top.png']],
+    [7, ['/assets/resources/blocks/oak_leaves.png']],
+    [8, ['/assets/resources/blocks/oak_planks.png']],
+    [9, ['/assets/resources/blocks/sand.png']],
+    [11, ['/assets/resources/blocks/glass.png']],
+    [12, ['/assets/resources/blocks/bricks.png']],
+    [13, ['/assets/resources/blocks/coal_ore.png']],
+    [14, ['/assets/resources/blocks/iron_ore.png']],
+    [15, ['/assets/resources/blocks/gold_ore.png']],
+    [16, ['/assets/resources/blocks/diamond_ore.png']],
+    [17, ['/assets/resources/blocks/torch.png']],
+    [18, ['/assets/resources/blocks/crafting_table_top.png']],
+    [19, ['/assets/resources/blocks/crafting_table_side.png']],
+    [20, ['/assets/resources/blocks/bookshelf.png']],
+    [21, ['/assets/resources/blocks/snow.png']],
+    [22, ['/assets/resources/blocks/stone_bricks.png']],
+    [23, ['/assets/resources/blocks/crafting_table_front.png']],
   ];
-  Promise.all(grassAssets.map(([index, src]) => new Promise<void>((resolve) => {
-    const image = new Image();
-    image.onload = () => {
-      const col = index % atlasCols;
-      const row = Math.floor(index / atlasCols);
-      ctx.clearRect(col * tileSize, row * tileSize, tileSize, tileSize);
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(image, col * tileSize, row * tileSize, tileSize, tileSize);
-      resolve();
-    };
-    image.onerror = () => resolve();
-    image.src = src;
-  }))).then(() => {
+
+  function loadSingleImage(src: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = (err) => reject(err);
+      img.src = src;
+    });
+  }
+
+  async function loadTileSources(tileIndex: number, sources: string[]): Promise<void> {
+    for (const src of sources) {
+      try {
+        const image = await loadSingleImage(src);
+        const col = tileIndex % atlasCols;
+        const row = Math.floor(tileIndex / atlasCols);
+        ctx.clearRect(col * tileSize, row * tileSize, tileSize, tileSize);
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(image, col * tileSize, row * tileSize, tileSize, tileSize);
+        return;
+      } catch {
+        // Try next source or retain procedural fallback
+      }
+    }
+  }
+
+  const readyPromise = Promise.all(blockAssets.map(([index, sources]) => loadTileSources(index, sources))).then(() => {
     texture.needsUpdate = true;
   });
 
   const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.85, metalness: 0.1, alphaTest: 0.5 });
   const waterMaterial = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.1, metalness: 0.1, transparent: true, opacity: 0.72 });
-  return { texture, material, waterMaterial };
+  return { texture, material, waterMaterial, readyPromise };
 }
 
 export function getAtlasUVs(tileIndex: number): { u0: number; v0: number; u1: number; v1: number } {
