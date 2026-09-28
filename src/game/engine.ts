@@ -93,9 +93,13 @@ export class Game {
     this.sprites = initSprites();
     this.input.attach(this.mainCanvas);
 
-    const settings = JSON.parse(localStorage.getItem('shadows_settings') || '{}');
-    if (settings.volumes) this.volumes = settings.volumes;
-    if (settings.bindings) this.input.loadBindings(settings.bindings);
+    try {
+      const settings = JSON.parse(localStorage.getItem('shadows_settings') || '{}');
+      if (settings.volumes) this.volumes = settings.volumes;
+      if (settings.bindings) this.input.loadBindings(settings.bindings);
+    } catch {
+      // LocalStorage might be restricted in sandboxed iframes
+    }
     // Keep the core gameplay controls consistent even if an older save used the previous layout.
     this.input.bindings.attack = ['KeyQ'];
     this.input.bindings.jump = ['Space'];
@@ -577,10 +581,14 @@ export class Game {
   }
 
   saveSettings(): void {
-    localStorage.setItem('shadows_settings', JSON.stringify({
-      volumes: this.volumes,
-      bindings: this.input.saveBindings(),
-    }));
+    try {
+      localStorage.setItem('shadows_settings', JSON.stringify({
+        volumes: this.volumes,
+        bindings: this.input.saveBindings(),
+      }));
+    } catch {
+      // LocalStorage might be restricted in sandboxed iframes
+    }
   }
 
   // ============================================================

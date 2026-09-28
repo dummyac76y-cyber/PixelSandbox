@@ -1,0 +1,8 @@
+{
+  "name": "Pixel Sandbox - Infinite World Builder",
+  "description": "A Minecraft-inspired infinite sandbox game built with React, TypeScript, and HTML5 Canvas featuring procedural generation, block mining and building, hotbar inventory, and chiptune sound.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
