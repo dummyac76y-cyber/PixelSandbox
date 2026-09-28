@@ -178,6 +178,32 @@ export class World {
     return chunk;
   }
 
+  // Find a clear 3x3 starting area so a new player never loads inside terrain.
+  findSafeSpawn(): { x: number; y: number } {
+    const candidates = [
+      { tx: 0, ty: 0 },
+      { tx: 1, ty: 0 },
+      { tx: -1, ty: 0 },
+      { tx: 0, ty: 1 },
+      { tx: 0, ty: -1 },
+    ];
+    for (const candidate of candidates) {
+      let clear = true;
+      for (let y = -1; y <= 1 && clear; y++) {
+        for (let x = -1; x <= 1; x++) {
+          if (isSolid(this.getTile((candidate.tx + x) * TILE_SIZE, (candidate.ty + y) * TILE_SIZE))) {
+            clear = false;
+            break;
+          }
+        }
+      }
+      if (clear) {
+        return { x: candidate.tx * TILE_SIZE, y: candidate.ty * TILE_SIZE };
+      }
+    }
+    return { x: 0, y: 0 };
+  }
+
   // Get tile at world coordinates
   getTile(x: number, y: number): TileType {
     const tx = Math.floor(x / TILE_SIZE);
