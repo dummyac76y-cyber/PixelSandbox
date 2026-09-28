@@ -267,26 +267,31 @@ export class UI {
   drawDialogue(ctx: CanvasRenderingContext2D): void {
     if (!this.dialogueActive) return;
 
-    // Dialogue box
-    const boxH = 48;
+    // Dialogue box - larger and more visible
+    const boxH = 56;
     const boxY = INTERNAL_H - boxH - 4;
     const boxX = 8;
     const boxW = INTERNAL_W - 16;
 
-    // Background
+    // Background with border
+    ctx.fillStyle = PALETTE.black;
+    ctx.fillRect(boxX - 1, boxY - 1, boxW + 2, boxH + 2);
     ctx.fillStyle = PALETTE.darkBlue;
     ctx.fillRect(boxX, boxY, boxW, boxH);
     ctx.strokeStyle = PALETTE.white;
     ctx.lineWidth = 1;
     ctx.strokeRect(boxX + 0.5, boxY + 0.5, boxW - 1, boxH - 1);
 
-    // Name tag
+    // Name tag - more prominent
     if (this.dialogueName) {
+      const nameW = ctx.measureText(this.dialogueName).width + 16;
+      ctx.fillStyle = PALETTE.black;
+      ctx.fillRect(boxX + 3, boxY - 12, nameW + 2, 14);
       ctx.fillStyle = PALETTE.darkPurple;
-      ctx.fillRect(boxX + 4, boxY - 10, ctx.measureText(this.dialogueName).width + 12, 12);
-      ctx.fillStyle = PALETTE.white;
+      ctx.fillRect(boxX + 4, boxY - 11, nameW, 12);
+      ctx.fillStyle = PALETTE.yellow;
       ctx.font = '8px monospace';
-      ctx.fillText(this.dialogueName, boxX + 10, boxY - 1);
+      ctx.fillText(this.dialogueName, boxX + 12, boxY - 2);
     }
 
     // Text with typewriter
@@ -295,42 +300,45 @@ export class UI {
     ctx.font = '8px monospace';
 
     // Word wrap
-    const maxW = boxW - 16;
+    const maxW = boxW - 20;
     const words = displayText.split(' ');
     let line = '';
-    let lineY = boxY + 14;
+    let lineY = boxY + 16;
     for (const word of words) {
       const testLine = line + (line ? ' ' : '') + word;
       if (ctx.measureText(testLine).width > maxW) {
-        ctx.fillText(line, boxX + 8, lineY);
+        ctx.fillText(line, boxX + 10, lineY);
         line = word;
-        lineY += 10;
+        lineY += 11;
       } else {
         line = testLine;
       }
     }
-    ctx.fillText(line, boxX + 8, lineY);
+    ctx.fillText(line, boxX + 10, lineY);
 
     // Advance indicator
     if (this.dialogueCharIndex >= this.dialogueText.length) {
       const blink = Math.floor(Date.now() / 300) % 2;
       if (blink) {
         ctx.fillStyle = PALETTE.yellow;
-        ctx.fillText('▼', boxX + boxW - 12, boxY + boxH - 6);
+        ctx.font = '10px monospace';
+        ctx.fillText('▼', boxX + boxW - 14, boxY + boxH - 6);
       }
     }
 
     // Choices
     if (this.dialogueChoices) {
-      const choiceX = boxX + boxW - 80;
-      const choiceY = boxY - 10 - this.dialogueChoices.length * 12;
+      const choiceX = boxX + boxW - 100;
+      const choiceY = boxY - 12 - this.dialogueChoices.length * 13;
+      ctx.fillStyle = PALETTE.black;
+      ctx.fillRect(choiceX - 5, choiceY - 3, 105, this.dialogueChoices.length * 13 + 6);
       ctx.fillStyle = PALETTE.darkBlue;
-      ctx.fillRect(choiceX - 4, choiceY - 2, 84, this.dialogueChoices.length * 12 + 4);
+      ctx.fillRect(choiceX - 4, choiceY - 2, 103, this.dialogueChoices.length * 13 + 4);
       for (let i = 0; i < this.dialogueChoices.length; i++) {
         ctx.fillStyle = i === this.dialogueChoiceIndex ? PALETTE.yellow : PALETTE.white;
         ctx.font = '8px monospace';
         const prefix = i === this.dialogueChoiceIndex ? '▶ ' : '  ';
-        ctx.fillText(prefix + this.dialogueChoices[i], choiceX, choiceY + 8 + i * 12);
+        ctx.fillText(prefix + this.dialogueChoices[i], choiceX, choiceY + 9 + i * 13);
       }
     }
   }

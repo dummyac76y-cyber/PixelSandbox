@@ -688,8 +688,6 @@ export class Game {
   }
 
   talkToNPC(npc: NPC): void {
-    this.state = GameState.DIALOGUE;
-
     if (npc.name === 'Elder Morin') {
       this.elderTalkCount++;
       this.quests.progressObjective('talk', 'elder');
@@ -700,15 +698,16 @@ export class Game {
           'First, prove your courage - defeat 5 slimes in the Whispering Woods.',
           'Then seek the dungeon key hidden deep in the Ruins.',
           'Come back to me after proving yourself!',
-        ], () => {
-          this.state = GameState.PLAYING;
-        });
+        ]);
+        this.state = GameState.DIALOGUE;
       } else if (this.elderTalkCount === 2 && !this.choiceOffered) {
         this.choiceOffered = true;
         this.ui.startDialogue('Elder Morin', [
           'Before you go, choose your blessing:',
-        ], () => {
-          // Check which choice was selected using lastChoice
+        ], undefined, ['Power (Better Sword)', 'Wisdom (Shield)']);
+        this.state = GameState.DIALOGUE;
+        // Handle choice after dialogue ends
+        this.ui.dialogueCallback = () => {
           if (this.ui.lastChoice.includes('Power') || this.ui.lastChoice.includes('Sword')) {
             this.quests.makeChoice('power');
             this.inventory.addItem('sword_2');
@@ -721,7 +720,7 @@ export class Game {
             this.ui.showNotification('Received Wooden Shield!', 90);
           }
           this.state = GameState.PLAYING;
-        }, ['Power (Better Sword)', 'Wisdom (Shield)']);
+        };
       } else {
         let line = 'May the light guide you, hero.';
         if (this.quests.choiceMade === 'power') {
@@ -729,26 +728,26 @@ export class Game {
         } else if (this.quests.choiceMade === 'wisdom') {
           line = 'Your shield will protect you. Stay strong!';
         }
-        this.ui.startDialogue('Elder Morin', [line], () => {
-          this.state = GameState.PLAYING;
-        });
+        this.ui.startDialogue('Elder Morin', [line]);
+        this.state = GameState.DIALOGUE;
       }
     } else if (npc.name === 'Merchant Gill') {
       this.ui.startDialogue('Merchant Gill', [
         'Welcome to my shop! Press E to browse my wares.',
-      ], () => {
+      ]);
+      this.state = GameState.DIALOGUE;
+      this.ui.dialogueCallback = () => {
         this.state = GameState.SHOP;
         this.ui.shopOpen = true;
         this.ui.shopCursor = 0;
         this.ui.shopMessage = '';
-      });
+      };
     } else if (npc.name === 'Villager Pip') {
       const lines = this.quests.getCurrentQuest()?.id === 'quest_2' ?
         ['Be careful in the woods! The slimes have been multiplying.', 'Try attacking them when they get close!'] :
         ['You\'re the hero the elder was talking about?', 'Good luck out there!'];
-      this.ui.startDialogue('Villager Pip', lines, () => {
-        this.state = GameState.PLAYING;
-      });
+      this.ui.startDialogue('Villager Pip', lines);
+      this.state = GameState.DIALOGUE;
     }
   }
 
@@ -775,9 +774,8 @@ export class Game {
   }
 
   readSign(sign: { text: string }): void {
-    this.ui.startDialogue('', [sign.text], () => {
-      this.state = GameState.PLAYING;
-    });
+    this.ui.startDialogue('', [sign.text]);
+    this.state = GameState.DIALOGUE;
   }
 
   enterDoor(doorData: any): void {
