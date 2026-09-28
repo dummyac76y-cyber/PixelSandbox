@@ -112,15 +112,15 @@ export class Controls3D {
       if (!rawDelta) return;
 
       wheelAccumulator += rawDelta;
-      const threshold = 45;
+      const threshold = 30;
 
       while (Math.abs(wheelAccumulator) >= threshold) {
         const direction = wheelAccumulator > 0 ? 1 : -1;
         wheelAccumulator -= direction * threshold;
 
-        if (this.onSlotChange) {
-          // game3d.ts treats values 0..8 as absolute slots and other values as deltas.
-          // Use +10 for scroll-down so it becomes a +1 delta; -1 is already a delta.
+        if (this.onSlotScroll) {
+          this.onSlotScroll(direction > 0 ? 1 : -1);
+        } else if (this.onSlotChange) {
           this.onSlotChange(direction > 0 ? 10 : -1);
         }
       }

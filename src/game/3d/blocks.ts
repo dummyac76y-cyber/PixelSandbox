@@ -88,7 +88,7 @@ export function createVoxelTextureAtlas(): {
     ctx.restore();
   }
 
-  // Pre-render procedural fallback textures for all atlas tiles so blocks are never invisible
+  // Pre-render procedural fallback textures for all atlas tiles
   drawTile(0, (c) => {
     c.fillStyle = '#4ca64c'; c.fillRect(0,0,16,16);
     const greens = ['#3f923f','#56b856','#439d43','#5bc25b','#368136'];
@@ -161,32 +161,128 @@ export function createVoxelTextureAtlas(): {
   texture.magFilter = THREE.NearestFilter;
   texture.minFilter = THREE.NearestFilter;
   texture.generateMipmaps = false;
+  texture.colorSpace = THREE.SRGBColorSpace;
 
-  // Real PNG block resource mappings (with fallback SVGs if PNG fails)
-  const blockAssets: Array<[number, string[]]> = [
-    [0, ['/assets/resources/blocks/grass_block_top.png', '/assets/blocks/grass_block_top.svg']],
-    [1, ['/assets/resources/blocks/grass_block_side.png', '/assets/blocks/grass_block_side.svg']],
-    [2, ['/assets/resources/blocks/dirt.png', '/assets/blocks/grass_block_bottom.svg']],
-    [3, ['/assets/resources/blocks/stone.png']],
-    [4, ['/assets/resources/blocks/cobblestone.png']],
-    [5, ['/assets/resources/blocks/oak_log.png']],
-    [6, ['/assets/resources/blocks/oak_log_top.png']],
-    [7, ['/assets/resources/blocks/oak_leaves.png']],
-    [8, ['/assets/resources/blocks/oak_planks.png']],
-    [9, ['/assets/resources/blocks/sand.png']],
-    [11, ['/assets/resources/blocks/glass.png']],
-    [12, ['/assets/resources/blocks/bricks.png']],
-    [13, ['/assets/resources/blocks/coal_ore.png']],
-    [14, ['/assets/resources/blocks/iron_ore.png']],
-    [15, ['/assets/resources/blocks/gold_ore.png']],
-    [16, ['/assets/resources/blocks/diamond_ore.png']],
-    [17, ['/assets/resources/blocks/torch.png']],
-    [18, ['/assets/resources/blocks/crafting_table_top.png']],
-    [19, ['/assets/resources/blocks/crafting_table_side.png']],
-    [20, ['/assets/resources/blocks/bookshelf.png']],
-    [21, ['/assets/resources/blocks/snow.png']],
-    [22, ['/assets/resources/blocks/stone_bricks.png']],
-    [23, ['/assets/resources/blocks/crafting_table_front.png']],
+  // Real PNG block resource mappings including resourcepack/ and assets/ paths
+  const blockAssets: Array<[number, string[], { tintR?: number; tintG?: number; tintB?: number }]> = [
+    [0, [
+      '/resourcepack/assets/minecraft/textures/block/grass_block_top.png',
+      '/assets/minecraft/textures/block/grass_block_top.png',
+      '/assets/resources/blocks/grass_block_top.png',
+      '/assets/blocks/grass_block_top.svg',
+    ], { tintR: 0.33, tintG: 0.72, tintB: 0.33 }],
+    [1, [
+      '/resourcepack/assets/minecraft/textures/block/grass_block_side.png',
+      '/assets/minecraft/textures/block/grass_block_side.png',
+      '/assets/resources/blocks/grass_block_side.png',
+      '/assets/blocks/grass_block_side.svg',
+    ], {}],
+    [2, [
+      '/resourcepack/assets/minecraft/textures/block/dirt.png',
+      '/assets/minecraft/textures/block/dirt.png',
+      '/assets/resources/blocks/dirt.png',
+      '/assets/blocks/grass_block_bottom.svg',
+    ], {}],
+    [3, [
+      '/resourcepack/assets/minecraft/textures/block/stone.png',
+      '/assets/minecraft/textures/block/stone.png',
+      '/assets/resources/blocks/stone.png',
+    ], {}],
+    [4, [
+      '/resourcepack/assets/minecraft/textures/block/cobblestone.png',
+      '/assets/minecraft/textures/block/cobblestone.png',
+      '/assets/resources/blocks/cobblestone.png',
+    ], {}],
+    [5, [
+      '/resourcepack/assets/minecraft/textures/block/oak_log.png',
+      '/assets/minecraft/textures/block/oak_log.png',
+      '/assets/resources/blocks/oak_log.png',
+    ], {}],
+    [6, [
+      '/resourcepack/assets/minecraft/textures/block/oak_log_top.png',
+      '/assets/minecraft/textures/block/oak_log_top.png',
+      '/assets/resources/blocks/oak_log_top.png',
+    ], {}],
+    [7, [
+      '/resourcepack/assets/minecraft/textures/block/oak_leaves.png',
+      '/assets/minecraft/textures/block/oak_leaves.png',
+      '/assets/resources/blocks/oak_leaves.png',
+    ], { tintR: 0.22, tintG: 0.58, tintB: 0.22 }],
+    [8, [
+      '/resourcepack/assets/minecraft/textures/block/oak_planks.png',
+      '/assets/minecraft/textures/block/oak_planks.png',
+      '/assets/resources/blocks/oak_planks.png',
+    ], {}],
+    [9, [
+      '/resourcepack/assets/minecraft/textures/block/sand.png',
+      '/assets/minecraft/textures/block/sand.png',
+      '/assets/resources/blocks/sand.png',
+    ], {}],
+    [11, [
+      '/resourcepack/assets/minecraft/textures/block/glass.png',
+      '/assets/minecraft/textures/block/glass.png',
+      '/assets/resources/blocks/glass.png',
+    ], {}],
+    [12, [
+      '/resourcepack/assets/minecraft/textures/block/bricks.png',
+      '/assets/minecraft/textures/block/bricks.png',
+      '/assets/resources/blocks/bricks.png',
+    ], {}],
+    [13, [
+      '/resourcepack/assets/minecraft/textures/block/coal_ore.png',
+      '/assets/minecraft/textures/block/coal_ore.png',
+      '/assets/resources/blocks/coal_ore.png',
+    ], {}],
+    [14, [
+      '/resourcepack/assets/minecraft/textures/block/iron_ore.png',
+      '/assets/minecraft/textures/block/iron_ore.png',
+      '/assets/resources/blocks/iron_ore.png',
+    ], {}],
+    [15, [
+      '/resourcepack/assets/minecraft/textures/block/gold_ore.png',
+      '/assets/minecraft/textures/block/gold_ore.png',
+      '/assets/resources/blocks/gold_ore.png',
+    ], {}],
+    [16, [
+      '/resourcepack/assets/minecraft/textures/block/diamond_ore.png',
+      '/assets/minecraft/textures/block/diamond_ore.png',
+      '/assets/resources/blocks/diamond_ore.png',
+    ], {}],
+    [17, [
+      '/resourcepack/assets/minecraft/textures/block/torch.png',
+      '/assets/minecraft/textures/block/torch.png',
+      '/assets/resources/blocks/torch.png',
+    ], {}],
+    [18, [
+      '/resourcepack/assets/minecraft/textures/block/crafting_table_top.png',
+      '/assets/minecraft/textures/block/crafting_table_top.png',
+      '/assets/resources/blocks/crafting_table_top.png',
+    ], {}],
+    [19, [
+      '/resourcepack/assets/minecraft/textures/block/crafting_table_side.png',
+      '/assets/minecraft/textures/block/crafting_table_side.png',
+      '/assets/resources/blocks/crafting_table_side.png',
+    ], {}],
+    [20, [
+      '/resourcepack/assets/minecraft/textures/block/bookshelf.png',
+      '/assets/minecraft/textures/block/bookshelf.png',
+      '/assets/resources/blocks/bookshelf.png',
+    ], {}],
+    [21, [
+      '/resourcepack/assets/minecraft/textures/block/snow.png',
+      '/assets/minecraft/textures/block/snow.png',
+      '/assets/resources/blocks/snow.png',
+    ], {}],
+    [22, [
+      '/resourcepack/assets/minecraft/textures/block/stone_bricks.png',
+      '/assets/minecraft/textures/block/stone_bricks.png',
+      '/assets/resources/blocks/stone_bricks.png',
+    ], {}],
+    [23, [
+      '/resourcepack/assets/minecraft/textures/block/crafting_table_front.png',
+      '/assets/minecraft/textures/block/crafting_table_front.png',
+      '/assets/resources/blocks/crafting_table_front.png',
+    ], {}],
   ];
 
   function loadSingleImage(src: string): Promise<HTMLImageElement> {
@@ -198,15 +294,62 @@ export function createVoxelTextureAtlas(): {
     });
   }
 
-  async function loadTileSources(tileIndex: number, sources: string[]): Promise<void> {
+  async function loadTileSources(
+    tileIndex: number,
+    sources: string[],
+    opts: { tintR?: number; tintG?: number; tintB?: number }
+  ): Promise<void> {
     for (const src of sources) {
       try {
         const image = await loadSingleImage(src);
         const col = tileIndex % atlasCols;
         const row = Math.floor(tileIndex / atlasCols);
-        ctx.clearRect(col * tileSize, row * tileSize, tileSize, tileSize);
+        const tileX = col * tileSize;
+        const tileY = row * tileSize;
+
+        ctx.clearRect(tileX, tileY, tileSize, tileSize);
         ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(image, col * tileSize, row * tileSize, tileSize, tileSize);
+
+        if (opts.tintR !== undefined && opts.tintG !== undefined && opts.tintB !== undefined) {
+          // Draw to temporary canvas to apply foliage/grass tinting to grayscale mask textures
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = tileSize;
+          tempCanvas.height = tileSize;
+          const tempCtx = tempCanvas.getContext('2d')!;
+          tempCtx.imageSmoothingEnabled = false;
+          tempCtx.drawImage(image, 0, 0, tileSize, tileSize);
+
+          const imgData = tempCtx.getImageData(0, 0, tileSize, tileSize);
+          const data = imgData.data;
+
+          // Check if texture is grayscale mask
+          let isGrayscale = true;
+          for (let i = 0; i < data.length; i += 4) {
+            if (data[i + 3] > 0) {
+              const diff = Math.max(Math.abs(data[i] - data[i + 1]), Math.abs(data[i + 1] - data[i + 2]));
+              if (diff > 25) {
+                isGrayscale = false;
+                break;
+              }
+            }
+          }
+
+          if (isGrayscale) {
+            for (let i = 0; i < data.length; i += 4) {
+              if (data[i + 3] > 0) {
+                data[i] = Math.min(255, Math.round(data[i] * opts.tintR * 2.2));
+                data[i + 1] = Math.min(255, Math.round(data[i + 1] * opts.tintG * 2.2));
+                data[i + 2] = Math.min(255, Math.round(data[i + 2] * opts.tintB * 2.2));
+              }
+            }
+            tempCtx.putImageData(imgData, 0, 0);
+            ctx.drawImage(tempCanvas, tileX, tileY, tileSize, tileSize);
+          } else {
+            ctx.drawImage(image, tileX, tileY, tileSize, tileSize);
+          }
+        } else {
+          ctx.drawImage(image, tileX, tileY, tileSize, tileSize);
+        }
         return;
       } catch {
         // Try next source or retain procedural fallback
@@ -214,12 +357,26 @@ export function createVoxelTextureAtlas(): {
     }
   }
 
-  const readyPromise = Promise.all(blockAssets.map(([index, sources]) => loadTileSources(index, sources))).then(() => {
+  const readyPromise = Promise.all(
+    blockAssets.map(([index, sources, opts]) => loadTileSources(index, sources, opts))
+  ).then(() => {
     texture.needsUpdate = true;
   });
 
-  const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.85, metalness: 0.1, alphaTest: 0.5 });
-  const waterMaterial = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.1, metalness: 0.1, transparent: true, opacity: 0.72 });
+  const material = new THREE.MeshStandardMaterial({
+    map: texture,
+    vertexColors: true,
+    roughness: 0.85,
+    metalness: 0.1,
+    alphaTest: 0.5,
+  });
+  const waterMaterial = new THREE.MeshStandardMaterial({
+    map: texture,
+    roughness: 0.1,
+    metalness: 0.1,
+    transparent: true,
+    opacity: 0.72,
+  });
   return { texture, material, waterMaterial, readyPromise };
 }
 
