@@ -87,7 +87,7 @@ export const ITEMS: Record<string, Item> = {
   wood: {
     id: 'wood',
     name: 'Wood',
-    description: 'Building material',
+    description: 'Sturdy timber for fences and shelters',
     icon: 'icon_wood',
     type: ItemType.MATERIAL,
     stackLimit: 99,
@@ -96,7 +96,7 @@ export const ITEMS: Record<string, Item> = {
   stone: {
     id: 'stone',
     name: 'Stone',
-    description: 'Building material',
+    description: 'Rough stone for walls and foundations',
     icon: 'icon_stone',
     type: ItemType.MATERIAL,
     stackLimit: 99,
@@ -105,7 +105,7 @@ export const ITEMS: Record<string, Item> = {
   leaves: {
     id: 'leaves',
     name: 'Leaves',
-    description: 'Decorative blocks',
+    description: 'Fresh foliage for natural cover',
     icon: 'icon_leaves',
     type: ItemType.MATERIAL,
     stackLimit: 99,

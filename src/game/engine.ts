@@ -96,6 +96,10 @@ export class Game {
     const settings = JSON.parse(localStorage.getItem('shadows_settings') || '{}');
     if (settings.volumes) this.volumes = settings.volumes;
     if (settings.bindings) this.input.loadBindings(settings.bindings);
+    // Keep the core gameplay controls consistent even if an older save used the previous layout.
+    this.input.bindings.attack = ['KeyQ'];
+    this.input.bindings.jump = ['Space'];
+    this.input.bindings.toggleMode = ['Tab', 'KeyF'];
     this.audio.setMasterVolume(this.volumes[0]);
     this.audio.setMusicVolume(this.volumes[1]);
     this.audio.setSfxVolume(this.volumes[2]);
@@ -714,11 +718,11 @@ export class Game {
     if (this.placeMode) {
       ctx.fillStyle = PALETTE.green;
       ctx.font = '8px monospace';
-      ctx.fillText('PLACE MODE [Q]', 4, INTERNAL_H - 30);
+      ctx.fillText('PLACE MODE [TAB/F]', 4, INTERNAL_H - 30);
     } else {
       ctx.fillStyle = PALETTE.red;
       ctx.font = '8px monospace';
-      ctx.fillText('BREAK MODE [Q]', 4, INTERNAL_H - 30);
+      ctx.fillText('BREAK MODE [TAB/F]', 4, INTERNAL_H - 30);
     }
 
     // ---- HELP OVERLAY ----
@@ -840,11 +844,11 @@ export class Game {
     ctx.font = '7px monospace';
     const controls = [
       'WASD/Arrows: Move',
-      'Space/J: Break/Place Block',
-      'Q: Toggle Break/Place Mode',
+      'Q: Attack / Break / Place',
+      'Tab/F: Toggle Break/Place Mode',
       'Z/X: Cycle Hotbar',
       '1-9: Select Hotbar Slot',
-      'K/Shift: Jump',
+      'Space: Jump',
       'I: Inventory',
     ];
     
@@ -905,6 +909,29 @@ export class Game {
     }
 
     ctx.globalAlpha = 1;
+
+    // Draw the equipped weapon in the player hand. Keep it in world-space with
+    // a small swing so equipment remains visible during idle, walk, and attack.
+    if (this.player.equippedWeapon) {
+      const weaponSpriteName = this.player.equippedWeapon === 'sword_2' || this.player.equippedWeapon === 'sword_3'
+        ? 'icon_sword2'
+        : 'icon_sword';
+      const weaponSprite = this.sprites.get(weaponSpriteName);
+      if (weaponSprite) {
+        const facing = this.player.dir === Dir.LEFT ? -1 : 1;
+        const attackSwing = this.player.state === PlayerState.ATTACK
+          ? Math.sin((this.player.attackTimer / 8) * Math.PI) * 0.55
+          : Math.sin(this.player.animFrame * 0.35) * 0.06;
+        const handX = px + (facing > 0 ? 11 : 5);
+        const handY = py + 9;
+        ctx.save();
+        ctx.translate(handX, handY);
+        ctx.scale(facing, 1);
+        ctx.rotate(facing * (-0.65 + attackSwing));
+        ctx.drawImage(weaponSprite.frames[0], -2, -7, 10, 14);
+        ctx.restore();
+      }
+    }
 
     // Attack slash
     if (this.player.state === PlayerState.ATTACK) {
