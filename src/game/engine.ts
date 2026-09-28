@@ -656,6 +656,9 @@ export class Game {
       }
     }
 
+    // ---- TERRAIN DEPTH & RESOURCE SHADOWS ----
+    this.drawTerrainDepth(ctx, startTX, startTY, endTX, endTY, cx, cy);
+
     // ---- SOLID TILES & OBJECTS ----
     for (let ty = startTY; ty < endTY; ty++) {
       for (let tx = startTX; tx < endTX; tx++) {
@@ -736,6 +739,65 @@ export class Game {
 
     if (this.state === GameState.PAUSED) {
       this.ui.drawPauseMenu(ctx, this.pauseMenuIndex);
+    }
+  }
+
+  drawTerrainDepth(ctx: CanvasRenderingContext2D, startTX: number, startTY: number, endTX: number, endTY: number, cx: number, cy: number): void {
+    for (let ty = startTY; ty < endTY; ty++) {
+      for (let tx = startTX; tx < endTX; tx++) {
+        const tile = this.world.getTile(tx * TILE_SIZE, ty * TILE_SIZE);
+        const sx = Math.floor(tx * TILE_SIZE - cx);
+        const sy = Math.floor(ty * TILE_SIZE - cy);
+        const below = this.world.getTile(tx * TILE_SIZE, (ty + 1) * TILE_SIZE);
+
+        // Soft contact shadows make blocks and resources feel grounded.
+        if (tile === TileType.TREE || tile === TileType.BUSH || tile === TileType.WALL || tile === TileType.PILLAR) {
+          ctx.fillStyle = 'rgba(20, 18, 18, 0.38)';
+          ctx.beginPath();
+          ctx.ellipse(sx + 8, sy + 15, tile === TileType.TREE ? 8 : 6, 2, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Pixel-art terrain accents break up flat fields without changing collision.
+        if (tile === TileType.GRASS || tile === TileType.PATH) {
+          const variant = Math.abs((tx * 31 + ty * 17) % 5);
+          ctx.fillStyle = tile === TileType.GRASS ? 'rgba(0, 68, 45, 0.34)' : 'rgba(70, 38, 26, 0.3)';
+          if (variant === 0) {
+            ctx.fillRect(sx + 3, sy + 5, 1, 2);
+            ctx.fillRect(sx + 4, sy + 4, 1, 1);
+          } else if (variant === 1) {
+            ctx.fillRect(sx + 12, sy + 10, 2, 1);
+          }
+        }
+
+        if (tile === TileType.WATER) {
+          ctx.fillStyle = 'rgba(255, 241, 232, 0.42)';
+          const wave = ((tx + ty) & 1) * 5;
+          ctx.fillRect(sx + 2 + wave, sy + 4, 4, 1);
+          ctx.fillRect(sx + 9 - wave, sy + 11, 4, 1);
+        }
+
+        // Layered trunk bark and leaf highlights give trees a block-built silhouette.
+        if (tile === TileType.TREE) {
+          ctx.fillStyle = 'rgba(35, 22, 18, 0.5)';
+          ctx.fillRect(sx + 11, sy + 8, 3, 8);
+          ctx.fillStyle = 'rgba(255, 204, 170, 0.3)';
+          ctx.fillRect(sx + 6, sy + 10, 2, 5);
+          ctx.fillStyle = 'rgba(0, 67, 40, 0.55)';
+          ctx.fillRect(sx + 2, sy - 4, 3, 5);
+          ctx.fillRect(sx + 11, sy - 2, 3, 4);
+          ctx.fillStyle = 'rgba(0, 228, 54, 0.28)';
+          ctx.fillRect(sx + 6, sy - 7, 3, 2);
+        }
+
+        // Stone blocks get a top edge and a darker right edge for depth.
+        if (tile === TileType.WALL || tile === TileType.PILLAR) {
+          ctx.fillStyle = 'rgba(255, 241, 232, 0.2)';
+          ctx.fillRect(sx + 1, sy + 1, 14, 1);
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+          ctx.fillRect(sx + 14, sy + 2, 2, 13);
+        }
+      }
     }
   }
 
