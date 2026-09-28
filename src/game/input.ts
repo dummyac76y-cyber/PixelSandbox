@@ -11,6 +11,7 @@ export interface KeyBindings {
   interact: string[];
   inventory: string[];
   pause: string[];
+  jump: string[];
 }
 
 const DEFAULT_BINDINGS: KeyBindings = {
@@ -22,6 +23,7 @@ const DEFAULT_BINDINGS: KeyBindings = {
   interact: ['KeyE'],
   inventory: ['KeyI'],
   pause: ['Escape'],
+  jump: ['KeyK', 'ShiftLeft', 'ShiftRight'],
 };
 
 export class Input {

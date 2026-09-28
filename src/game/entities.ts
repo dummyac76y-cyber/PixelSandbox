@@ -151,6 +151,13 @@ export class Player {
   // Interact
   interactTimer: number = 0;
 
+  // Jump
+  jumpVelocity: number = 0;
+  isJumping: boolean = false;
+  jumpHeight: number = 8; // pixels to rise
+  jumpDuration: number = 0;
+  jumpMaxDuration: number = 12; // ticks for jump arc
+
   // Equipment
   equippedWeapon: string = 'sword_1';
   equippedShield: string = '';
@@ -182,14 +189,43 @@ export class Player {
     return { x: hx, y: hy, w: hbW, h: hbH };
   }
 
-  update(input: { x: number; y: number }, attackPressed: boolean, world: World, audio: AudioManager): void {
+  update(input: { x: number; y: number }, attackPressed: boolean, jumpPressed: boolean, world: World, audio: AudioManager): void {
     // Decrease timers
     if (this.iFrames > 0) this.iFrames--;
     this.squash += (1 - this.squash) * 0.2;
 
+    // Handle jump physics
+    if (this.isJumping) {
+      this.jumpDuration++;
+      // Parabolic arc: rise then fall
+      const t = this.jumpDuration / this.jumpMaxDuration;
+      const jumpOffset = this.jumpHeight * 4 * t * (1 - t); // parabola peaking at t=0.5
+      this.jumpVelocity = jumpOffset;
+      
+      if (this.jumpDuration >= this.jumpMaxDuration) {
+        this.isJumping = false;
+        this.jumpDuration = 0;
+        this.jumpVelocity = 0;
+        this.state = PlayerState.IDLE;
+        this.squash = 0.85; // Landing squash
+        // Landing dust particles will be emitted by the engine
+      }
+    }
+
     switch (this.state) {
       case PlayerState.IDLE:
       case PlayerState.WALK:
+        this.handleMovement(input, world);
+        if (jumpPressed && !this.isJumping) {
+          this.startJump(audio);
+        }
+        if (attackPressed) {
+          this.startAttack(audio);
+        }
+        break;
+
+      case PlayerState.JUMP:
+        // Allow movement during jump
         this.handleMovement(input, world);
         if (attackPressed) {
           this.startAttack(audio);
@@ -289,6 +325,14 @@ export class Player {
     audio.playSwordSwing();
   }
 
+  startJump(audio: AudioManager): void {
+    this.isJumping = true;
+    this.jumpDuration = 0;
+    this.state = PlayerState.JUMP;
+    this.squash = 1.2; // Stretch up on jump
+    audio.playJump();
+  }
+
   takeDamage(amount: number, fromX: number, fromY: number, audio: AudioManager): boolean {
     if (this.iFrames > 0 || this.state === PlayerState.DEATH) return false;
 
@@ -326,6 +370,8 @@ export class Player {
         return `player_attack_${dirStr}`;
       case PlayerState.WALK:
         return `player_walk_${dirStr}`;
+      case PlayerState.JUMP:
+        return `player_jump_${dirStr}`;
       default:
         return `player_idle_${dirStr}`;
     }

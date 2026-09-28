@@ -392,6 +392,7 @@ export class Game {
     const interactPressed = this.input.isJustPressed('interact');
     const inventoryPressed = this.input.isJustPressed('inventory');
     const pausePressed = this.input.isJustPressed('pause');
+    const jumpPressed = this.input.isJustPressed('jump');
 
     if (pausePressed) {
       this.prevState = this.state;
@@ -419,7 +420,7 @@ export class Game {
     }
 
     // Update player
-    this.player.update(movement, attackPressed, this.world, this.audio);
+    this.player.update(movement, attackPressed, jumpPressed, this.world, this.audio);
 
     // Player attack vs enemies
     if (this.player.state === PlayerState.ATTACK) {
@@ -614,6 +615,29 @@ export class Game {
     const py = this.player.y + this.player.height / 2;
     const interactRange = 20;
 
+    // Check doors first (highest priority)
+    const area = this.world.getArea();
+    const playerTileX = Math.floor(px / TILE_SIZE);
+    const playerTileY = Math.floor(py / TILE_SIZE);
+    
+    // Check adjacent tiles for doors
+    for (let dy = -1; dy <= 1; dy++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        const tx = playerTileX + dx;
+        const ty = playerTileY + dy;
+        if (tx >= 0 && ty >= 0 && tx < area.width && ty < area.height) {
+          if (area.map[ty][tx] === TileType.DOOR) {
+            const doorX = tx * TILE_SIZE + 8;
+            const doorY = ty * TILE_SIZE + 8;
+            if (Math.abs(px - doorX) < interactRange && Math.abs(py - doorY) < interactRange) {
+              this.nearbyInteractable = { type: 'door', x: doorX, y: doorY - 12, data: { tx, ty, area: this.world.currentArea } };
+              return;
+            }
+          }
+        }
+      }
+    }
+
     // Check NPCs
     for (const npc of this.npcs) {
       const nx = npc.x + npc.width / 2;
@@ -625,7 +649,6 @@ export class Game {
     }
 
     // Check chests
-    const area = this.world.getArea();
     for (const chest of area.chests) {
       if (this.world.openedChests.has(chest.id)) continue;
       const cx = chest.x + 8;
@@ -649,6 +672,9 @@ export class Game {
 
   handleInteraction(interactable: { type: string; data: any }): void {
     switch (interactable.type) {
+      case 'door':
+        this.enterDoor(interactable.data);
+        break;
       case 'npc':
         this.talkToNPC(interactable.data as NPC);
         break;
@@ -752,6 +778,33 @@ export class Game {
     this.ui.startDialogue('', [sign.text], () => {
       this.state = GameState.PLAYING;
     });
+  }
+
+  enterDoor(doorData: any): void {
+    const { area, tx, ty } = doorData;
+    
+    // Determine which house this door leads to based on location
+    if (area === AreaId.VILLAGE) {
+      // Check which house door this is
+      if (tx === 8 && ty === 8) {
+        // Elder's house
+        this.audio.playDoorOpen();
+        this.transitionToArea(AreaId.VILLAGE_HOUSE, 8 * TILE_SIZE, 8 * TILE_SIZE);
+      } else if (tx === 33 && ty === 8) {
+        // Merchant's house - just show dialogue
+        this.ui.startDialogue('', ["The shop is outside. Talk to the merchant directly!"], () => {
+          this.state = GameState.PLAYING;
+        });
+      } else if (tx === 8 && ty === 24) {
+        // Villager's house
+        this.audio.playDoorOpen();
+        this.transitionToArea(AreaId.VILLAGE_HOUSE, 8 * TILE_SIZE, 8 * TILE_SIZE);
+      }
+    } else if (area === AreaId.VILLAGE_HOUSE) {
+      // Exit house back to village
+      this.audio.playDoorOpen();
+      this.transitionToArea(AreaId.VILLAGE, 8 * TILE_SIZE, 9 * TILE_SIZE);
+    }
   }
 
   // ---- PAUSED ----
@@ -879,13 +932,19 @@ export class Game {
     const advance = this.input.isKeyJustPressed('Space') || this.input.isKeyJustPressed('Enter');
     const up = this.input.isKeyJustPressed('ArrowUp');
     const down = this.input.isKeyJustPressed('ArrowDown');
+    
+    // Also allow ESC to close dialogue
+    if (this.input.isKeyJustPressed('Escape')) {
+      this.ui.dialogueActive = false;
+      this.state = GameState.PLAYING;
+      return;
+    }
+    
     this.ui.updateDialogue(advance, up, down);
 
     if (!this.ui.dialogueActive) {
-      // Dialogue ended, return to playing (callback handles state change)
-      if (this.state === GameState.DIALOGUE) {
-        this.state = GameState.PLAYING;
-      }
+      // Dialogue ended, return to playing
+      this.state = GameState.PLAYING;
     }
   }
 
@@ -1270,7 +1329,18 @@ export class Game {
 
     const frame = sprite.frames[this.player.animFrame % sprite.frames.length];
     const px = Math.floor(this.player.x - cx);
-    const py = Math.floor(this.player.y - cy);
+    // Apply jump offset (subtract jumpVelocity to move up visually)
+    const py = Math.floor(this.player.y - cy - this.player.jumpVelocity);
+
+    // Draw shadow when jumping
+    if (this.player.isJumping) {
+      ctx.fillStyle = PALETTE.black;
+      ctx.globalAlpha = 0.3;
+      ctx.beginPath();
+      ctx.ellipse(px + 8, Math.floor(this.player.y - cy + 14), 6, 3, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
 
     // Flash white during i-frames
     if (this.player.iFrames > 0 && Math.floor(this.player.iFrames / 3) % 2 === 0) {

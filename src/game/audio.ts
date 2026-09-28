@@ -74,6 +74,11 @@ export class AudioManager {
     setTimeout(() => this.playTone(400, 0.05, 'sawtooth', 0.2, this.sfxGain), 30);
   }
 
+  playJump(): void {
+    this.playTone(300, 0.08, 'sine', 0.2, this.sfxGain);
+    setTimeout(() => this.playTone(450, 0.06, 'sine', 0.15, this.sfxGain), 40);
+  }
+
   playHit(): void {
     this.playNoise(0.08, 0.4, this.sfxGain);
     this.playTone(200, 0.06, 'square', 0.3, this.sfxGain);

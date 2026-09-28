@@ -53,6 +53,7 @@ export enum PlayerState {
   HURT = 'HURT',
   DEATH = 'DEATH',
   INTERACT = 'INTERACT',
+  JUMP = 'JUMP',
 }
 
 // Enemy states
