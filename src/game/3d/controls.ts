@@ -119,9 +119,10 @@ export class Controls3D {
         wheelAccumulator -= direction * threshold;
 
         if (this.onSlotChange) {
-          // game3d.ts treats values 0..8 as absolute slots and other values as deltas.
-          // Use +10 for scroll-down so it becomes a +1 delta; -1 is already a delta.
-          this.onSlotChange(direction > 0 ? 10 : -1);
+          // Standard Minecraft mouse wheel direction:
+          // Scroll Down (deltaY > 0) -> Next slot (+1)
+          // Scroll Up (deltaY < 0) -> Previous slot (-1)
+          this.onSlotChange(direction);
         }
       }
     }, { passive: false });

@@ -36,23 +36,24 @@ export interface BlockDef {
   lightLevel?: number;
   dropId: BlockType;
   dropCount: number;
+  // Face order: [+Y (top), -Y (bottom), -X (left), +X (right), +Z (front), -Z (back)]
   textures: [number, number, number, number, number, number];
   color: string;
 }
 
 export const BLOCK_DEFS: Record<BlockType, BlockDef> = {
   [BlockType.AIR]: { id: BlockType.AIR, name: 'Air', hardness: 0, soundType: 'dirt', transparent: true, dropId: BlockType.AIR, dropCount: 0, textures: [0,0,0,0,0,0], color: '#000000' },
-  [BlockType.GRASS]: { id: BlockType.GRASS, name: 'Grass Block', hardness: 0.6, soundType: 'grass', dropId: BlockType.DIRT, dropCount: 1, textures: [0,2,1,1,1,1], color: '#4caf50' },
-  [BlockType.DIRT]: { id: BlockType.DIRT, name: 'Dirt', hardness: 0.5, soundType: 'dirt', dropId: BlockType.DIRT, dropCount: 1, textures: [2,2,2,2,2,2], color: '#795548' },
-  [BlockType.STONE]: { id: BlockType.STONE, name: 'Stone', hardness: 1.5, soundType: 'stone', dropId: BlockType.COBBLESTONE, dropCount: 1, textures: [3,3,3,3,3,3], color: '#9e9e9e' },
-  [BlockType.COBBLESTONE]: { id: BlockType.COBBLESTONE, name: 'Cobblestone', hardness: 1.8, soundType: 'stone', dropId: BlockType.COBBLESTONE, dropCount: 1, textures: [4,4,4,4,4,4], color: '#757575' },
-  [BlockType.WOOD]: { id: BlockType.WOOD, name: 'Oak Log', hardness: 1.2, soundType: 'wood', dropId: BlockType.WOOD, dropCount: 1, textures: [6,6,5,5,5,5], color: '#6d4c41' },
-  [BlockType.LEAVES]: { id: BlockType.LEAVES, name: 'Oak Leaves', hardness: 0.3, soundType: 'grass', transparent: true, dropId: BlockType.LEAVES, dropCount: 1, textures: [7,7,7,7,7,7], color: '#2e7d32' },
-  [BlockType.PLANKS]: { id: BlockType.PLANKS, name: 'Oak Planks', hardness: 1.0, soundType: 'wood', dropId: BlockType.PLANKS, dropCount: 1, textures: [8,8,8,8,8,8], color: '#d7ccc8' },
-  [BlockType.SAND]: { id: BlockType.SAND, name: 'Sand', hardness: 0.5, soundType: 'sand', dropId: BlockType.SAND, dropCount: 1, textures: [9,9,9,9,9,9], color: '#fbc02d' },
-  [BlockType.WATER]: { id: BlockType.WATER, name: 'Water', hardness: 999, soundType: 'sand', transparent: true, dropId: BlockType.AIR, dropCount: 0, textures: [10,10,10,10,10,10], color: '#29b6f6' },
+  [BlockType.GRASS]: { id: BlockType.GRASS, name: 'Grass Block', hardness: 0.6, soundType: 'grass', dropId: BlockType.DIRT, dropCount: 1, textures: [0,2,1,1,1,1], color: '#55ab2f' },
+  [BlockType.DIRT]: { id: BlockType.DIRT, name: 'Dirt', hardness: 0.5, soundType: 'dirt', dropId: BlockType.DIRT, dropCount: 1, textures: [2,2,2,2,2,2], color: '#876043' },
+  [BlockType.STONE]: { id: BlockType.STONE, name: 'Stone', hardness: 1.5, soundType: 'stone', dropId: BlockType.COBBLESTONE, dropCount: 1, textures: [3,3,3,3,3,3], color: '#7d7d7d' },
+  [BlockType.COBBLESTONE]: { id: BlockType.COBBLESTONE, name: 'Cobblestone', hardness: 1.8, soundType: 'stone', dropId: BlockType.COBBLESTONE, dropCount: 1, textures: [4,4,4,4,4,4], color: '#6d6d6d' },
+  [BlockType.WOOD]: { id: BlockType.WOOD, name: 'Oak Log', hardness: 1.2, soundType: 'wood', dropId: BlockType.WOOD, dropCount: 1, textures: [6,6,5,5,5,5], color: '#6c5432' },
+  [BlockType.LEAVES]: { id: BlockType.LEAVES, name: 'Oak Leaves', hardness: 0.3, soundType: 'grass', transparent: true, dropId: BlockType.LEAVES, dropCount: 1, textures: [7,7,7,7,7,7], color: '#48b518' },
+  [BlockType.PLANKS]: { id: BlockType.PLANKS, name: 'Oak Planks', hardness: 1.0, soundType: 'wood', dropId: BlockType.PLANKS, dropCount: 1, textures: [8,8,8,8,8,8], color: '#a3834f' },
+  [BlockType.SAND]: { id: BlockType.SAND, name: 'Sand', hardness: 0.5, soundType: 'sand', dropId: BlockType.SAND, dropCount: 1, textures: [9,9,9,9,9,9], color: '#dbc689' },
+  [BlockType.WATER]: { id: BlockType.WATER, name: 'Water', hardness: 999, soundType: 'sand', transparent: true, dropId: BlockType.AIR, dropCount: 0, textures: [10,10,10,10,10,10], color: '#3f76e4' },
   [BlockType.GLASS]: { id: BlockType.GLASS, name: 'Glass', hardness: 0.3, soundType: 'glass', transparent: true, dropId: BlockType.GLASS, dropCount: 1, textures: [11,11,11,11,11,11], color: '#e0f7fa' },
-  [BlockType.BRICK]: { id: BlockType.BRICK, name: 'Bricks', hardness: 2.0, soundType: 'stone', dropId: BlockType.BRICK, dropCount: 1, textures: [12,12,12,12,12,12], color: '#b71c1c' },
+  [BlockType.BRICK]: { id: BlockType.BRICK, name: 'Bricks', hardness: 2.0, soundType: 'stone', dropId: BlockType.BRICK, dropCount: 1, textures: [12,12,12,12,12,12], color: '#96483a' },
   [BlockType.COAL_ORE]: { id: BlockType.COAL_ORE, name: 'Coal Ore', hardness: 2.2, soundType: 'stone', dropId: BlockType.COAL_ORE, dropCount: 1, textures: [13,13,13,13,13,13], color: '#424242' },
   [BlockType.IRON_ORE]: { id: BlockType.IRON_ORE, name: 'Iron Ore', hardness: 2.5, soundType: 'stone', dropId: BlockType.IRON_ORE, dropCount: 1, textures: [14,14,14,14,14,14], color: '#d1c4e9' },
   [BlockType.GOLD_ORE]: { id: BlockType.GOLD_ORE, name: 'Gold Ore', hardness: 2.8, soundType: 'stone', dropId: BlockType.GOLD_ORE, dropCount: 1, textures: [15,15,15,15,15,15], color: '#ffd54f' },
@@ -70,13 +71,13 @@ export function createVoxelTextureAtlas(): {
   waterMaterial: THREE.MeshStandardMaterial;
   readyPromise: Promise<void>;
 } {
-  const tileSize = 16;
+  const tileSize = 32;
   const atlasCols = 8;
   const atlasRows = 8;
   const canvas = document.createElement('canvas');
   canvas.width = tileSize * atlasCols;
   canvas.height = tileSize * atlasRows;
-  const ctx = canvas.getContext('2d')!;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
   ctx.imageSmoothingEnabled = false;
 
   function drawTile(index: number, drawFn: (cx: CanvasRenderingContext2D, x: number, y: number) => void) {
@@ -90,123 +91,148 @@ export function createVoxelTextureAtlas(): {
 
   // Pre-render procedural fallback textures for all atlas tiles so blocks are never invisible
   drawTile(0, (c) => {
-    c.fillStyle = '#4ca64c'; c.fillRect(0,0,16,16);
-    const greens = ['#3f923f','#56b856','#439d43','#5bc25b','#368136'];
-    for (let py=0;py<16;py++) for (let px=0;px<16;px++) if ((px*7+py*13)%3===0) { c.fillStyle=greens[(px+py)%greens.length]; c.fillRect(px,py,1,1); }
+    c.fillStyle = '#55ab2f'; c.fillRect(0,0,tileSize,tileSize);
   });
   drawTile(1, (c) => {
-    c.fillStyle='#866043'; c.fillRect(0,0,16,16);
-    const dirtSpecks=['#734f36','#9c7050','#63442e'];
-    for (let py=4;py<16;py++) for (let px=0;px<16;px++) if ((px*11+py*17)%4===0) { c.fillStyle=dirtSpecks[(px*3+py)%dirtSpecks.length]; c.fillRect(px,py,1,1); }
-    c.fillStyle='#4ca64c'; c.fillRect(0,0,16,3);
-    const fringe=[3,4,3,5,4,3,4,5,3,4,5,4,3,4,3,4];
-    for (let px=0;px<16;px++) { const h=fringe[px]; c.fillRect(px,0,1,h); if(h>=4){c.fillStyle='#3f923f';c.fillRect(px,h-1,1,1);c.fillStyle='#4ca64c';} }
+    c.fillStyle='#876043'; c.fillRect(0,0,tileSize,tileSize);
+    c.fillStyle='#55ab2f'; c.fillRect(0,0,tileSize,6);
   });
   drawTile(2, (c) => {
-    c.fillStyle='#866043'; c.fillRect(0,0,16,16);
-    const browns=['#734f36','#9c7050','#63442e','#91674a'];
-    for(let py=0;py<16;py++) for(let px=0;px<16;px++) if((px*7+py*13)%3===0){c.fillStyle=browns[(px*2+py*5)%browns.length];c.fillRect(px,py,1,1);}
+    c.fillStyle='#876043'; c.fillRect(0,0,tileSize,tileSize);
   });
   drawTile(3, (c) => {
-    c.fillStyle='#7a7a7a'; c.fillRect(0,0,16,16); const grays=['#6a6a6a','#8a8a8a','#5a5a5a','#949494'];
-    for(let py=0;py<16;py++) for(let px=0;px<16;px++) if((px*5+py*11)%3===0){c.fillStyle=grays[(px*3+py*7)%grays.length];c.fillRect(px,py,1,1);}
+    c.fillStyle='#7d7d7d'; c.fillRect(0,0,tileSize,tileSize);
   });
   drawTile(4, (c) => {
-    c.fillStyle='#555555'; c.fillRect(0,0,16,16);
-    const pebbles=[{x:0,y:0,w:7,h:4},{x:8,y:0,w:8,h:5},{x:0,y:5,w:9,h:5},{x:10,y:6,w:6,h:4},{x:0,y:11,w:7,h:5},{x:8,y:11,w:8,h:5}];
-    for(const p of pebbles){c.fillStyle='#787878';c.fillRect(p.x,p.y,p.w,p.h);c.fillStyle='#909090';c.fillRect(p.x+1,p.y+1,p.w-2,1);c.fillStyle='#3a3a3a';c.fillRect(p.x,p.y+p.h-1,p.w,1);c.fillRect(p.x+p.w-1,p.y,1,p.h);}
+    c.fillStyle='#6d6d6d'; c.fillRect(0,0,tileSize,tileSize);
   });
   drawTile(5, (c) => {
-    c.fillStyle='#5c4033'; c.fillRect(0,0,16,16); const barkShades=['#4a3328','#6d4c3d','#3f2b22','#7a5544'];
-    for(let px=0;px<16;px++){c.fillStyle=barkShades[px%barkShades.length];c.fillRect(px,0,1,16);} c.fillStyle='#332219';c.fillRect(3,4,2,3);c.fillRect(11,10,2,3);
+    c.fillStyle='#6c5432'; c.fillRect(0,0,tileSize,tileSize);
   });
   drawTile(6, (c) => {
-    c.fillStyle='#9e7e5a'; c.fillRect(0,0,16,16); c.fillStyle='#4a3328'; c.strokeRect(.5,.5,15,15); c.strokeRect(1.5,1.5,13,13); c.fillStyle='#826343';c.strokeRect(4.5,4.5,7,7);c.fillStyle='#6a4e32';c.fillRect(7,7,2,2);
+    c.fillStyle='#957848'; c.fillRect(0,0,tileSize,tileSize);
   });
   drawTile(7, (c) => {
-    c.fillStyle='#2e7d32';c.fillRect(0,0,16,16);const leafColors=['#1b5e20','#388e3c','#43a047','#256d29','#154a19'];
-    for(let py=0;py<16;py++) for(let px=0;px<16;px++) if((px*3+py*7)%2===0){c.fillStyle=leafColors[(px*5+py*11)%leafColors.length];c.fillRect(px,py,1,1);}
+    c.fillStyle='#48b518'; c.fillRect(0,0,tileSize,tileSize);
   });
   drawTile(8, (c) => {
-    c.fillStyle='#b88a44';c.fillRect(0,0,16,16);for(let i=0;i<4;i++){const y=i*4;c.fillStyle='#8c642e';c.fillRect(0,y+3,16,1);c.fillStyle='#cf9e55';c.fillRect(0,y,16,1);const seamX=i%2===0?7:12;c.fillStyle='#735224';c.fillRect(seamX,y,1,4);}
+    c.fillStyle='#a3834f'; c.fillRect(0,0,tileSize,tileSize);
   });
   drawTile(9, (c) => {
-    c.fillStyle='#e6c875';c.fillRect(0,0,16,16);const sands=['#d9b863','#f2d78a','#cca952','#f7e19e'];for(let py=0;py<16;py++)for(let px=0;px<16;px++)if((px*9+py*13)%3===0){c.fillStyle=sands[(px+py*3)%sands.length];c.fillRect(px,py,1,1);}
+    c.fillStyle='#dbc689'; c.fillRect(0,0,tileSize,tileSize);
   });
   drawTile(10, (c) => {
-    c.fillStyle='#2196f3';c.fillRect(0,0,16,16);c.fillStyle='#64b5f6';for(let y=1;y<16;y+=4)for(let x=0;x<16;x+=3)c.fillRect(x,y,2,1);c.fillStyle='#1976d2';for(let y=3;y<16;y+=4)for(let x=1;x<16;x+=3)c.fillRect(x,y,2,1);
+    c.fillStyle='#3f76e4'; c.fillRect(0,0,tileSize,tileSize);
   });
   drawTile(11, (c) => {
-    c.fillStyle='rgba(210,240,255,.45)';c.fillRect(0,0,16,16);c.fillStyle='rgba(255,255,255,.9)';c.strokeRect(.5,.5,15,15);c.fillRect(2,2,2,1);c.fillRect(3,3,3,1);c.fillRect(5,4,3,1);c.fillRect(11,10,2,1);c.fillRect(12,11,2,1);
+    c.fillStyle='rgba(210,240,255,.45)'; c.fillRect(0,0,tileSize,tileSize);
   });
   drawTile(12, (c) => {
-    c.fillStyle='#d3d3d3';c.fillRect(0,0,16,16);for(let r=0;r<4;r++){const y=r*4,offset=r%2*4;for(let cidx=-1;cidx<3;cidx++){const x=cidx*8+offset;c.fillStyle='#9e3f32';c.fillRect(x,y,7,3);c.fillStyle='#b74c3d';c.fillRect(x,y,6,1);c.fillStyle='#7a2f24';c.fillRect(x,y+2,7,1);}}
+    c.fillStyle='#96483a'; c.fillRect(0,0,tileSize,tileSize);
   });
-  function drawOre(index:number,gemColor:string,gemLight:string,gemDark:string){drawTile(index,(c)=>{c.fillStyle='#7a7a7a';c.fillRect(0,0,16,16);const grays=['#6a6a6a','#8a8a8a','#5a5a5a'];for(let py=0;py<16;py++)for(let px=0;px<16;px++)if((px*5+py*11)%3===0){c.fillStyle=grays[(px*3+py*7)%grays.length];c.fillRect(px,py,1,1);}const flecks=[{x:3,y:3},{x:4,y:3},{x:3,y:4},{x:10,y:4},{x:11,y:4},{x:11,y:5},{x:5,y:10},{x:6,y:10},{x:6,y:11},{x:5,y:11},{x:12,y:11},{x:13,y:11}];for(const f of flecks){c.fillStyle=gemColor;c.fillRect(f.x,f.y,1,1);}c.fillStyle=gemLight;c.fillRect(3,3,1,1);c.fillRect(10,4,1,1);c.fillRect(5,10,1,1);c.fillStyle=gemDark;c.fillRect(4,4,1,1);c.fillRect(6,11,1,1);});}
-  drawOre(13,'#262626','#3b3b3b','#121212');
-  drawOre(14,'#d8af92','#f3d3bc','#b3886b');
-  drawOre(15,'#fdd835','#fff59d','#f57f17');
-  drawOre(16,'#00e5ff','#84ffff','#00b0ff');
-  drawTile(17, (c) => {c.clearRect(0,0,16,16);c.fillStyle='#6d4c41';c.fillRect(7,6,2,8);c.fillStyle='#ff9800';c.fillRect(6,3,4,4);c.fillStyle='#ffeb3b';c.fillRect(7,2,2,3);c.fillStyle='#fff';c.fillRect(7,3,1,1);});
-  drawTile(18, (c) => {c.fillStyle='#b88a44';c.fillRect(0,0,16,16);c.fillStyle='#5c4033';c.strokeRect(2.5,2.5,11,11);c.fillRect(6,3,1,10);c.fillRect(10,3,1,10);c.fillRect(3,6,10,1);c.fillRect(3,10,10,1);});
-  drawTile(19, (c) => {c.fillStyle='#b88a44';c.fillRect(0,0,16,16);c.fillStyle='#5c4033';c.fillRect(1,1,14,14);c.fillStyle='#b88a44';c.fillRect(2,2,12,12);c.fillStyle='#7a7a7a';c.fillRect(4,4,4,2);c.fillStyle='#6d4c41';c.fillRect(5,6,2,6);});
-  drawTile(20, (c) => {c.fillStyle='#b88a44';c.fillRect(0,0,16,16);const bookColors=['#d32f2f','#1976d2','#388e3c','#fbc02d','#7b1fa2','#e64a19'];for(const rowY of [2,9]){c.fillStyle='#3e2723';c.fillRect(1,rowY,14,5);let bx=2,ci=0;while(bx<14){const bw=Math.min(2,14-bx);c.fillStyle=bookColors[ci%bookColors.length];c.fillRect(bx,rowY+1,bw,4);c.fillStyle='#fff';c.fillRect(bx,rowY+2,1,1);bx+=bw+1;ci++;}}});
-  drawTile(21, (c) => {c.fillStyle='#f5f5f5';c.fillRect(0,0,16,16);c.fillStyle='#fff';for(let py=0;py<16;py++)for(let px=0;px<16;px++)if((px+py)%2===0)c.fillRect(px,py,1,1);c.fillStyle='#e0e0e0';c.fillRect(3,4,1,1);c.fillRect(11,8,1,1);});
-  drawTile(22, (c) => {c.fillStyle='#4a4a4a';c.fillRect(0,0,16,16);for(let row=0;row<2;row++){const y=row*8,off=row*4;for(let col=-1;col<3;col++){const x=col*8+off;c.fillStyle='#7a7a7a';c.fillRect(x,y,7,7);c.fillStyle='#949494';c.fillRect(x,y,6,1);c.fillStyle='#616161';c.fillRect(x,y+6,7,1);}}});
-  drawTile(23, (c) => {
-    c.fillStyle='#b88a44';c.fillRect(0,0,16,16);c.fillStyle='#5c4033';c.fillRect(1,1,14,14);c.fillStyle='#b88a44';c.fillRect(2,2,12,12);c.fillStyle='#3e2723';c.fillRect(4,4,8,8);
-  });
+  function drawOreFallback(index: number, color: string) {
+    drawTile(index, (c) => {
+      c.fillStyle='#7d7d7d'; c.fillRect(0,0,tileSize,tileSize);
+      c.fillStyle=color; c.fillRect(8,8,16,16);
+    });
+  }
+  drawOreFallback(13, '#262626');
+  drawOreFallback(14, '#d1c4e9');
+  drawOreFallback(15, '#ffd54f');
+  drawOreFallback(16, '#00e5ff');
+  drawTile(17, (c) => { c.clearRect(0,0,tileSize,tileSize); c.fillStyle='#ffb300'; c.fillRect(12,8,8,16); });
+  drawTile(18, (c) => { c.fillStyle='#a3834f'; c.fillRect(0,0,tileSize,tileSize); });
+  drawTile(19, (c) => { c.fillStyle='#8d6e63'; c.fillRect(0,0,tileSize,tileSize); });
+  drawTile(20, (c) => { c.fillStyle='#a1887f'; c.fillRect(0,0,tileSize,tileSize); });
+  drawTile(21, (c) => { c.fillStyle='#ffffff'; c.fillRect(0,0,tileSize,tileSize); });
+  drawTile(22, (c) => { c.fillStyle='#757575'; c.fillRect(0,0,tileSize,tileSize); });
+  drawTile(23, (c) => { c.fillStyle='#8d6e63'; c.fillRect(0,0,tileSize,tileSize); });
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.magFilter = THREE.NearestFilter;
   texture.minFilter = THREE.NearestFilter;
   texture.generateMipmaps = false;
+  texture.colorSpace = THREE.SRGBColorSpace;
 
-  // Real PNG block resource mappings (with fallback SVGs if PNG fails)
-  const blockAssets: Array<[number, string[]]> = [
-    [0, ['/assets/resources/blocks/grass_block_top.png', '/assets/blocks/grass_block_top.svg']],
-    [1, ['/assets/resources/blocks/grass_block_side.png', '/assets/blocks/grass_block_side.svg']],
-    [2, ['/assets/resources/blocks/dirt.png', '/assets/blocks/grass_block_bottom.svg']],
-    [3, ['/assets/resources/blocks/stone.png']],
-    [4, ['/assets/resources/blocks/cobblestone.png']],
-    [5, ['/assets/resources/blocks/oak_log.png']],
-    [6, ['/assets/resources/blocks/oak_log_top.png']],
-    [7, ['/assets/resources/blocks/oak_leaves.png']],
-    [8, ['/assets/resources/blocks/oak_planks.png']],
-    [9, ['/assets/resources/blocks/sand.png']],
-    [11, ['/assets/resources/blocks/glass.png']],
-    [12, ['/assets/resources/blocks/bricks.png']],
-    [13, ['/assets/resources/blocks/coal_ore.png']],
-    [14, ['/assets/resources/blocks/iron_ore.png']],
-    [15, ['/assets/resources/blocks/gold_ore.png']],
-    [16, ['/assets/resources/blocks/diamond_ore.png']],
-    [17, ['/assets/resources/blocks/torch.png']],
-    [18, ['/assets/resources/blocks/crafting_table_top.png']],
-    [19, ['/assets/resources/blocks/crafting_table_side.png']],
-    [20, ['/assets/resources/blocks/bookshelf.png']],
-    [21, ['/assets/resources/blocks/snow.png']],
-    [22, ['/assets/resources/blocks/stone_bricks.png']],
-    [23, ['/assets/resources/blocks/crafting_table_front.png']],
+  // Real PNG block resource mappings from resource pack
+  const blockAssets: Array<[number, string[], { tint?: [number, number, number]; overlay?: string }?]> = [
+    [0, ['/assets/resources/blocks/grass_block_top.png', '/resourcepack/assets/minecraft/textures/block/grass_block_top.png'], { tint: [85, 171, 47] }],
+    [1, ['/assets/resources/blocks/grass_block_side.png', '/resourcepack/assets/minecraft/textures/block/grass_block_side.png']],
+    [2, ['/assets/resources/blocks/dirt.png', '/resourcepack/assets/minecraft/textures/block/dirt.png']],
+    [3, ['/assets/resources/blocks/stone.png', '/resourcepack/assets/minecraft/textures/block/stone.png']],
+    [4, ['/assets/resources/blocks/cobblestone.png', '/resourcepack/assets/minecraft/textures/block/cobblestone.png']],
+    [5, ['/assets/resources/blocks/oak_log.png', '/resourcepack/assets/minecraft/textures/block/oak_log.png']],
+    [6, ['/assets/resources/blocks/oak_log_top.png', '/resourcepack/assets/minecraft/textures/block/oak_log_top.png']],
+    [7, ['/assets/resources/blocks/oak_leaves.png', '/resourcepack/assets/minecraft/textures/block/oak_leaves.png'], { tint: [72, 181, 24] }],
+    [8, ['/assets/resources/blocks/oak_planks.png', '/resourcepack/assets/minecraft/textures/block/oak_planks.png']],
+    [9, ['/assets/resources/blocks/sand.png', '/resourcepack/assets/minecraft/textures/block/sand.png']],
+    [11, ['/assets/resources/blocks/glass.png', '/resourcepack/assets/minecraft/textures/block/glass.png']],
+    [12, ['/assets/resources/blocks/bricks.png', '/resourcepack/assets/minecraft/textures/block/bricks.png']],
+    [13, ['/assets/resources/blocks/coal_ore.png', '/resourcepack/assets/minecraft/textures/block/coal_ore.png']],
+    [14, ['/assets/resources/blocks/iron_ore.png', '/resourcepack/assets/minecraft/textures/block/iron_ore.png']],
+    [15, ['/assets/resources/blocks/gold_ore.png', '/resourcepack/assets/minecraft/textures/block/gold_ore.png']],
+    [16, ['/assets/resources/blocks/diamond_ore.png', '/resourcepack/assets/minecraft/textures/block/diamond_ore.png']],
+    [17, ['/assets/resources/blocks/torch.png', '/resourcepack/assets/minecraft/textures/block/torch.png']],
+    [18, ['/assets/resources/blocks/crafting_table_top.png', '/resourcepack/assets/minecraft/textures/block/crafting_table_top.png']],
+    [19, ['/assets/resources/blocks/crafting_table_side.png', '/resourcepack/assets/minecraft/textures/block/crafting_table_side.png']],
+    [20, ['/assets/resources/blocks/bookshelf.png', '/resourcepack/assets/minecraft/textures/block/bookshelf.png']],
+    [21, ['/assets/resources/blocks/snow.png', '/resourcepack/assets/minecraft/textures/block/snow.png']],
+    [22, ['/assets/resources/blocks/stone_bricks.png', '/resourcepack/assets/minecraft/textures/block/stone_bricks.png']],
+    [23, ['/assets/resources/blocks/crafting_table_front.png', '/resourcepack/assets/minecraft/textures/block/crafting_table_front.png']],
   ];
 
   function loadSingleImage(src: string): Promise<HTMLImageElement> {
     return new Promise((resolve, reject) => {
       const img = new Image();
+      img.crossOrigin = 'anonymous';
       img.onload = () => resolve(img);
       img.onerror = (err) => reject(err);
       img.src = src;
     });
   }
 
-  async function loadTileSources(tileIndex: number, sources: string[]): Promise<void> {
+  async function loadTileSources(
+    tileIndex: number,
+    sources: string[],
+    options?: { tint?: [number, number, number]; overlay?: string }
+  ): Promise<void> {
     for (const src of sources) {
       try {
         const image = await loadSingleImage(src);
         const col = tileIndex % atlasCols;
         const row = Math.floor(tileIndex / atlasCols);
-        ctx.clearRect(col * tileSize, row * tileSize, tileSize, tileSize);
+        const destX = col * tileSize;
+        const destY = row * tileSize;
+
+        ctx.clearRect(destX, destY, tileSize, tileSize);
         ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(image, col * tileSize, row * tileSize, tileSize, tileSize);
+
+        if (options?.tint) {
+          // Draw image to temp canvas to apply tint multiply
+          const tempCanvas = document.createElement('canvas');
+          tempCanvas.width = image.width;
+          tempCanvas.height = image.height;
+          const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true })!;
+          tempCtx.imageSmoothingEnabled = false;
+          tempCtx.drawImage(image, 0, 0);
+
+          const imgData = tempCtx.getImageData(0, 0, image.width, image.height);
+          const data = imgData.data;
+          const [tr, tg, tb] = options.tint;
+
+          for (let i = 0; i < data.length; i += 4) {
+            if (data[i + 3] > 0) {
+              data[i] = Math.round((data[i] / 255) * tr);
+              data[i + 1] = Math.round((data[i + 1] / 255) * tg);
+              data[i + 2] = Math.round((data[i + 2] / 255) * tb);
+            }
+          }
+          tempCtx.putImageData(imgData, 0, 0);
+          ctx.drawImage(tempCanvas, destX, destY, tileSize, tileSize);
+        } else {
+          ctx.drawImage(image, destX, destY, tileSize, tileSize);
+        }
+
         return;
       } catch {
         // Try next source or retain procedural fallback
@@ -214,12 +240,28 @@ export function createVoxelTextureAtlas(): {
     }
   }
 
-  const readyPromise = Promise.all(blockAssets.map(([index, sources]) => loadTileSources(index, sources))).then(() => {
+  const readyPromise = Promise.all(
+    blockAssets.map(([index, sources, options]) => loadTileSources(index, sources, options))
+  ).then(() => {
     texture.needsUpdate = true;
   });
 
-  const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.85, metalness: 0.1, alphaTest: 0.5 });
-  const waterMaterial = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.1, metalness: 0.1, transparent: true, opacity: 0.72 });
+  const material = new THREE.MeshStandardMaterial({
+    map: texture,
+    roughness: 0.85,
+    metalness: 0.1,
+    alphaTest: 0.5,
+    vertexColors: true,
+  });
+
+  const waterMaterial = new THREE.MeshStandardMaterial({
+    map: texture,
+    roughness: 0.1,
+    metalness: 0.1,
+    transparent: true,
+    opacity: 0.72,
+  });
+
   return { texture, material, waterMaterial, readyPromise };
 }
 
