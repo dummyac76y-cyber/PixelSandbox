@@ -68,20 +68,35 @@ export interface Chunk {
 }
 
 // Tile collision properties
+// NOTE: Trees and bushes are walkable (only their sprites look solid) so the
+// player can never get stuck inside dense foliage. Walls/water/etc. stay solid,
+// but the movement code also has an anti-stuck escape if you end up inside one.
 export function isSolid(tile: TileType): boolean {
-  return tile === TileType.WALL || tile === TileType.WATER || tile === TileType.TREE ||
+  return tile === TileType.WALL || tile === TileType.WATER ||
     tile === TileType.HOUSE_WALL || tile === TileType.ROOF || tile === TileType.FENCE ||
-    tile === TileType.PILLAR || tile === TileType.BOSS_DOOR || tile === TileType.BUSH;
+    tile === TileType.PILLAR || tile === TileType.BOSS_DOOR;
 }
 
 export function isBreakable(tile: TileType): boolean {
-  return tile === TileType.TREE || tile === TileType.BUSH || tile === TileType.WALL ||
+  return tile === TileType.TREE || tile === TileType.TREE_PINE || tile === TileType.TREE_OAK ||
+    tile === TileType.TREE_BIRCH || tile === TileType.TREE_DARK ||
+    tile === TileType.BUSH || tile === TileType.WALL ||
     tile === TileType.FENCE || tile === TileType.PILLAR;
+}
+
+// True for any of the tree variants (used by rendering & chopping)
+export function isTree(tile: TileType): boolean {
+  return tile === TileType.TREE || tile === TileType.TREE_PINE || tile === TileType.TREE_OAK ||
+    tile === TileType.TREE_BIRCH || tile === TileType.TREE_DARK;
 }
 
 export function tileToItem(tile: TileType): string | null {
   switch (tile) {
-    case TileType.TREE: return 'wood';
+    case TileType.TREE:
+    case TileType.TREE_PINE:
+    case TileType.TREE_OAK:
+    case TileType.TREE_BIRCH:
+    case TileType.TREE_DARK: return 'wood';
     case TileType.BUSH: return 'leaves';
     case TileType.WALL: return 'stone';
     case TileType.FENCE: return 'wood';
@@ -135,6 +150,16 @@ export class World {
       generated: true,
     };
 
+    // ---- BIOME NOISE (low frequency => large, coherent regions) ----
+    const biomeElev = noise(cx * CHUNK_SIZE * 0.012, cy * CHUNK_SIZE * 0.012, this.seed + 5000, 2);
+    const biomeMoist = noise(cx * CHUNK_SIZE * 0.012, cy * CHUNK_SIZE * 0.012, this.seed + 6000, 2);
+    let biome: number; // 0 desert, 1 plains, 2 forest, 3 rocky, 4 lake
+    if (biomeElev < 0.28) biome = 4;            // lake
+    else if (biomeElev > 0.72) biome = 3;       // rocky highlands
+    else if (biomeMoist < 0.3) biome = 0;       // dry desert
+    else if (biomeMoist > 0.62) biome = 2;      // dense forest
+    else biome = 1;                             // plains
+
     // Generate tiles
     for (let y = 0; y < CHUNK_SIZE; y++) {
       chunk.tiles[y] = [];
@@ -142,32 +167,46 @@ export class World {
         const worldX = cx * CHUNK_SIZE + x;
         const worldY = cy * CHUNK_SIZE + y;
 
-        // Base terrain using noise
+        // Local terrain detail
         const elevation = noise(worldX * 0.05, worldY * 0.05, this.seed, 3);
         const moisture = noise(worldX * 0.08, worldY * 0.08, this.seed + 1000, 2);
         const detail = noise(worldX * 0.2, worldY * 0.2, this.seed + 2000, 2);
 
         let tile = TileType.GRASS;
 
-        // Water in low areas
-        if (elevation < 0.3) {
-          tile = TileType.WATER;
-        }
-        // Paths in medium areas
-        else if (elevation > 0.45 && elevation < 0.55 && detail > 0.6) {
-          tile = TileType.PATH;
-        }
-        // Stone in high areas
-        else if (elevation > 0.7) {
-          tile = TileType.FLOOR_STONE;
-        }
-        // Trees in forests (high moisture)
-        else if (moisture > 0.65 && detail > 0.5) {
-          tile = TileType.TREE;
-        }
-        // Bushes in grasslands
-        else if (moisture > 0.4 && moisture < 0.6 && detail > 0.7) {
-          tile = TileType.BUSH;
+        switch (biome) {
+          case 4: // LAKE: water with occasional reeds/bushes at edges
+            if (elevation < 0.42) tile = TileType.WATER;
+            else if (detail > 0.75) tile = TileType.BUSH;
+            break;
+          case 3: // ROCKY: stone ground, boulders (breakable walls), sparse bush
+            tile = elevation > 0.5 ? TileType.FLOOR_STONE : TileType.GRASS;
+            if (tile === TileType.FLOOR_STONE && detail > 0.82) tile = TileType.WALL;
+            else if (tile === TileType.GRASS && detail > 0.88) tile = TileType.BUSH;
+            break;
+          case 2: // FOREST: dense trees, variety within the biome
+            tile = TileType.GRASS;
+            if (detail > 0.42) {
+              // Pick a tree variant from a dedicated noise channel so trees
+              // vary (pine / oak / birch / dark) across the forest.
+              const variant = hash(worldX, worldY, this.seed + 777);
+              if (variant < 0.35) tile = TileType.TREE_PINE;
+              else if (variant < 0.65) tile = TileType.TREE_OAK;
+              else if (variant < 0.85) tile = TileType.TREE_BIRCH;
+              else tile = TileType.TREE_DARK;
+            } else if (moisture > 0.55 && detail > 0.3 && detail <= 0.42) {
+              tile = TileType.BUSH;
+            }
+            break;
+          case 0: // DESERT: sand paths and scattered bushes
+            tile = detail > 0.55 ? TileType.PATH : TileType.SAND;
+            if (detail > 0.9) tile = TileType.BUSH;
+            break;
+          default: // PLAINS: mostly open grass, few trees, some bushes
+            if (detail > 0.86 && moisture > 0.45) tile = TileType.TREE_OAK;
+            else if (detail > 0.72) tile = TileType.BUSH;
+            else if (elevation > 0.45 && elevation < 0.55 && detail > 0.6) tile = TileType.PATH;
+            break;
         }
 
         chunk.tiles[y][x] = tile;
@@ -249,6 +288,31 @@ export class World {
       if (this.isSolidAt(p.x, p.y)) return true;
     }
     return false;
+  }
+
+  // Anti-stuck escape: if the rectangle currently overlaps solid tiles,
+  // find the nearest free position (searching outward in rings) and return it.
+  // This guarantees the player can never be permanently trapped inside terrain.
+  escapeIfStuck(rect: Rect): { x: number; y: number } | null {
+    if (!this.checkCollision(rect)) return null;
+    const step = 2;
+    for (let radius = step; radius <= TILE_SIZE * 3; radius += step) {
+      // Scan the ring at this radius around the current position
+      for (let a = -radius; a <= radius; a += step) {
+        const candidates = [
+          { x: rect.x + a, y: rect.y - radius },
+          { x: rect.x + a, y: rect.y + radius },
+          { x: rect.x - radius, y: rect.y + a },
+          { x: rect.x + radius, y: rect.y + a },
+        ];
+        for (const c of candidates) {
+          if (!this.checkCollision({ ...rect, x: c.x, y: c.y })) {
+            return { x: c.x, y: c.y };
+          }
+        }
+      }
+    }
+    return null;
   }
 
   // Resolve collision on X axis

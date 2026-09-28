@@ -9,7 +9,7 @@ import {
 import { initSprites, SpriteSheet } from './sprites';
 import { Input } from './input';
 import { AudioManager } from './audio';
-import { World, CHUNK_SIZE, isBreakable, tileToItem, itemToTile } from './world';
+import { World, CHUNK_SIZE, isBreakable, isTree, tileToItem, itemToTile } from './world';
 import { Player, ParticleSystem } from './entities';
 import { UI } from './ui';
 import { Inventory, ITEMS } from './systems';
@@ -341,7 +341,7 @@ export class Game {
         this.shakeTimer = 4;
 
         // Enhanced breaking animation - multiple particle bursts
-        const particleColor = brokenTile === TileType.TREE ? PALETTE.brown :
+        const particleColor = isTree(brokenTile) ? PALETTE.brown :
           brokenTile === TileType.BUSH ? PALETTE.darkGreen :
             brokenTile === TileType.WALL ? PALETTE.lightGray : 
               brokenTile === TileType.FENCE ? PALETTE.brown : PALETTE.darkGray;
@@ -634,10 +634,11 @@ export class Game {
           case TileType.GRASS: spriteName = 'tile_grass'; break;
           case TileType.PATH: spriteName = 'tile_path'; break;
           case TileType.FLOOR_STONE: spriteName = 'tile_floor_stone'; break;
+          case TileType.SAND: spriteName = 'tile_sand'; break;
           case TileType.WATER: spriteName = 'tile_water'; break;
           default:
-            if (tile === TileType.WALL || tile === TileType.TREE || tile === TileType.BUSH ||
-              tile === TileType.FENCE || tile === TileType.PILLAR) {
+            if (isTree(tile) || tile === TileType.BUSH ||
+              tile === TileType.WALL || tile === TileType.FENCE || tile === TileType.PILLAR) {
               spriteName = 'tile_grass';
             }
             break;
@@ -663,6 +664,10 @@ export class Game {
         switch (tile) {
           case TileType.WALL: spriteName = 'tile_wall'; break;
           case TileType.TREE: spriteName = 'tile_tree_trunk'; break;
+          case TileType.TREE_PINE: spriteName = 'tile_tree_trunk_pine'; break;
+          case TileType.TREE_OAK: spriteName = 'tile_tree_trunk'; break;
+          case TileType.TREE_BIRCH: spriteName = 'tile_tree_trunk_birch'; break;
+          case TileType.TREE_DARK: spriteName = 'tile_tree_trunk_dark'; break;
           case TileType.FENCE: spriteName = 'tile_fence'; break;
           case TileType.PILLAR: spriteName = 'tile_pillar'; break;
           case TileType.BUSH: spriteName = 'tile_bush'; break;
@@ -680,13 +685,22 @@ export class Game {
     // ---- ENTITIES ----
     this.drawPlayer(ctx, cx, cy);
 
-    // ---- FOREGROUND (tree canopies) ----
+    // ---- FOREGROUND (tree canopies - variant per tree type) ----
     for (let ty = startTY; ty < endTY; ty++) {
       for (let tx = startTX; tx < endTX; tx++) {
-        if (this.world.getTile(tx * TILE_SIZE, ty * TILE_SIZE) === TileType.TREE) {
+        const tile = this.world.getTile(tx * TILE_SIZE, ty * TILE_SIZE);
+        let canopyName = '';
+        switch (tile) {
+          case TileType.TREE: canopyName = 'tile_tree_canopy'; break;
+          case TileType.TREE_PINE: canopyName = 'tile_tree_canopy_pine'; break;
+          case TileType.TREE_OAK: canopyName = 'tile_tree_canopy_oak'; break;
+          case TileType.TREE_BIRCH: canopyName = 'tile_tree_canopy_birch'; break;
+          case TileType.TREE_DARK: canopyName = 'tile_tree_canopy_dark'; break;
+        }
+        if (canopyName) {
           const sx = tx * TILE_SIZE - cx;
           const sy = (ty - 1) * TILE_SIZE - cy;
-          const canopy = this.sprites.get('tile_tree_canopy');
+          const canopy = this.sprites.get(canopyName);
           if (canopy) {
             ctx.globalAlpha = 0.85;
             ctx.drawImage(canopy.frames[0], Math.floor(sx), Math.floor(sy));
