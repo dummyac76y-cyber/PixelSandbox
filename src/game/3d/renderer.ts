@@ -6,6 +6,7 @@ import { BlockType, BLOCK_DEFS, createVoxelTextureAtlas } from './blocks';
 import { World3D } from './world3d';
 import { ParticleSystem3D } from './particles';
 import { ITEM_DEFS, ItemDef } from './resources';
+import { createHeldItemMesh } from './resourceRegistry';
 
 export class GameRenderer3D {
   container: HTMLElement;
@@ -288,92 +289,9 @@ export class GameRenderer3D {
       return;
     }
 
-    if (itemDef.id === 'torch') {
-      // Slender wooden torch with burning flame tip
-      const group = new THREE.Group();
-      const stickGeo = new THREE.BoxGeometry(0.05, 0.42, 0.05);
-      const stickMat = new THREE.MeshStandardMaterial({ color: 0x5c3d23, roughness: 0.8 });
-      const stick = new THREE.Mesh(stickGeo, stickMat);
-      stick.position.set(0, 0.1, 0);
-      group.add(stick);
-
-      const coalGeo = new THREE.BoxGeometry(0.07, 0.06, 0.07);
-      const coalMat = new THREE.MeshStandardMaterial({ color: 0x262626, roughness: 0.9 });
-      const coal = new THREE.Mesh(coalGeo, coalMat);
-      coal.position.set(0, 0.28, 0);
-      group.add(coal);
-
-      const flameGeo = new THREE.BoxGeometry(0.07, 0.1, 0.07);
-      const flameMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24 });
-      const flame = new THREE.Mesh(flameGeo, flameMat);
-      flame.position.set(0, 0.35, 0);
-      group.add(flame);
-
-      group.position.set(0, 0, 0);
-      group.rotation.set(0.2, -0.4, 0.1);
-      this.handMesh = group;
-      this.handGroup.add(group);
-      return;
-    }
-
-    if (itemDef.blockType !== undefined && itemDef.blockType !== BlockType.AIR) {
-      // Block model: mini cube with block textures
-      const blockDef = BLOCK_DEFS[itemDef.blockType];
-      const geo = new THREE.BoxGeometry(0.24, 0.24, 0.24);
-      const mat = new THREE.MeshStandardMaterial({
-        color: blockDef ? blockDef.color : 0xcccccc,
-        roughness: 0.7,
-      });
-      this.handMesh = new THREE.Mesh(geo, mat);
-      this.handMesh.position.set(0, 0, 0);
-      this.handMesh.rotation.set(0.4, -0.6, 0.2);
-      this.handGroup.add(this.handMesh);
-    } else {
-      // Tool model (pickaxe, sword, stick)
-      const group = new THREE.Group();
-
-      // Handle (stick)
-      const handleGeo = new THREE.BoxGeometry(0.04, 0.45, 0.04);
-      const handleMat = new THREE.MeshStandardMaterial({ color: 0x8d6e63, roughness: 0.8 });
-      const handle = new THREE.Mesh(handleGeo, handleMat);
-      handle.position.set(0, 0.1, 0);
-      group.add(handle);
-
-      // Tool head
-      let headColor = 0x9e9e9e;
-      if (itemDef.id.includes('wood')) headColor = 0xdeb887;
-      if (itemDef.id.includes('stone')) headColor = 0x757575;
-      if (itemDef.id.includes('iron')) headColor = 0xeeeeee;
-      if (itemDef.id.includes('diamond')) headColor = 0x00e5ff;
-
-      const headMat = new THREE.MeshStandardMaterial({ color: headColor, roughness: 0.4, metalness: 0.6 });
-
-      if (itemDef.toolType === 'pickaxe') {
-        const headGeo = new THREE.BoxGeometry(0.34, 0.08, 0.08);
-        const head = new THREE.Mesh(headGeo, headMat);
-        head.position.set(0, 0.32, 0);
-        group.add(head);
-      } else if (itemDef.toolType === 'sword') {
-        const bladeGeo = new THREE.BoxGeometry(0.08, 0.45, 0.03);
-        const blade = new THREE.Mesh(bladeGeo, headMat);
-        blade.position.set(0, 0.35, 0);
-        const guardGeo = new THREE.BoxGeometry(0.24, 0.04, 0.06);
-        const guard = new THREE.Mesh(guardGeo, new THREE.MeshStandardMaterial({ color: 0xffd54f }));
-        guard.position.set(0, 0.13, 0);
-        group.add(blade);
-        group.add(guard);
-      } else {
-        const headGeo = new THREE.BoxGeometry(0.12, 0.12, 0.12);
-        const head = new THREE.Mesh(headGeo, headMat);
-        head.position.set(0, 0.32, 0);
-        group.add(head);
-      }
-
-      group.rotation.set(-0.5, 0.3, -0.4);
-      group.position.set(0.05, -0.05, 0.05);
-      this.handMesh = group as any;
-      this.handGroup.add(group);
-    }
+    // Render held item using actual resource pack texture / 3D block model
+    this.handMesh = createHeldItemMesh(itemDef.id, 0.28);
+    this.handGroup.add(this.handMesh);
   }
 
   // Trigger mining/attack swing animation

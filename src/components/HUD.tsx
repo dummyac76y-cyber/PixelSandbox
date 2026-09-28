@@ -33,6 +33,9 @@ export const HUD: React.FC<HUDProps> = ({
 }) => {
   if (!state) return null;
 
+  // When inventory or settings modal is open, suppress rendering the gameplay hotbar & crosshair
+  const isModalOpen = state.isInventoryOpen || state.isSettingsOpen;
+
   // Format time of day into 24h clock string
   const hours = Math.floor((state.timeOfDay * 24 + 6) % 24);
   const minutes = Math.floor(((state.timeOfDay * 24 * 60) % 60));
@@ -120,34 +123,36 @@ export const HUD: React.FC<HUDProps> = ({
         </div>
       </div>
 
-      {/* Center: Better Vanilla GUI Pixel Crosshair & Mining Progress */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
-        {/* Pixel-art Crosshair asset */}
-        <img
-          src="/resourcepack/assets/minecraft/textures/gui/sprites/hud/crosshair.png"
-          alt="Crosshair"
-          className="w-4 h-4 md:w-5 md:h-5 [image-rendering:pixelated] select-none opacity-90 drop-shadow-[0_0_2px_rgba(0,0,0,0.8)]"
-        />
+      {/* Center: Better Vanilla GUI Pixel Crosshair & Mining Progress (Hidden when inventory is open) */}
+      {!isModalOpen && (
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none">
+          {/* Pixel-art Crosshair asset */}
+          <img
+            src="/resourcepack/assets/minecraft/textures/gui/sprites/hud/crosshair.png"
+            alt="Crosshair"
+            className="w-4 h-4 md:w-5 md:h-5 [image-rendering:pixelated] select-none opacity-90 drop-shadow-[0_0_2px_rgba(0,0,0,0.8)]"
+          />
 
-        {/* Targeted block label & Mining Progress */}
-        {state.targetedBlock && (
-          <div className="mt-4 flex flex-col items-center gap-1.5">
-            <span className="text-xs font-medium text-white/90 bg-black/75 backdrop-blur-sm px-2.5 py-0.5 rounded-md border border-white/10 shadow-sm">
-              {state.targetedBlock.name}
-            </span>
+          {/* Targeted block label & Mining Progress */}
+          {state.targetedBlock && (
+            <div className="mt-4 flex flex-col items-center gap-1.5">
+              <span className="text-xs font-medium text-white/90 bg-black/75 backdrop-blur-sm px-2.5 py-0.5 rounded-md border border-white/10 shadow-sm">
+                {state.targetedBlock.name}
+              </span>
 
-            {/* Mining crack bar progress */}
-            {state.miningProgress > 0 && (
-              <div className="w-20 h-1.5 bg-black/70 rounded-full overflow-hidden border border-white/20">
-                <div
-                  className="h-full bg-gradient-to-r from-amber-400 to-amber-200 transition-all duration-75"
-                  style={{ width: `${Math.min(100, state.miningProgress * 100)}%` }}
-                />
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+              {/* Mining crack bar progress */}
+              {state.miningProgress > 0 && (
+                <div className="w-20 h-1.5 bg-black/70 rounded-full overflow-hidden border border-white/20">
+                  <div
+                    className="h-full bg-gradient-to-r from-amber-400 to-amber-200 transition-all duration-75"
+                    style={{ width: `${Math.min(100, state.miningProgress * 100)}%` }}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Notification Toast */}
       {state.notification && (
@@ -156,7 +161,8 @@ export const HUD: React.FC<HUDProps> = ({
         </div>
       )}
 
-      {/* Bottom HUD: Status Bars & Better Vanilla GUI Hotbar */}
+      {/* Bottom HUD: Status Bars & Gameplay Hotbar (Hidden when modal/inventory is open to prevent duplicate hotbars) */}
+      {!isModalOpen && (
       <div className="self-center flex flex-col items-center gap-1.5 pointer-events-auto">
         {/* Status Row: Hearts (Health) & Food / Stamina */}
         <div className="flex items-center justify-between w-[455px] px-1 mb-0.5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
@@ -294,6 +300,7 @@ export const HUD: React.FC<HUDProps> = ({
           )}
         </div>
       </div>
+      )}
     </div>
   );
 };

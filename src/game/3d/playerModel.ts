@@ -3,6 +3,7 @@
 // ============================================================
 import * as THREE from 'three';
 import { ITEM_DEFS } from './resources';
+import { createHeldItemMesh } from './resourceRegistry';
 
 export class PlayerModel3D {
   scene: THREE.Scene;
@@ -163,50 +164,8 @@ export class PlayerModel3D {
     const def = ITEM_DEFS[itemId];
     if (!def) return;
 
-    if (itemId === 'torch') {
-      const group = new THREE.Group();
-      const stick = new THREE.Mesh(
-        new THREE.BoxGeometry(0.04, 0.32, 0.04),
-        new THREE.MeshStandardMaterial({ color: 0x5c3d23 })
-      );
-      group.add(stick);
-      const flame = new THREE.Mesh(
-        new THREE.BoxGeometry(0.06, 0.08, 0.06),
-        new THREE.MeshBasicMaterial({ color: 0xfbbf24 })
-      );
-      flame.position.y = 0.18;
-      group.add(flame);
-      group.rotation.set(-0.4, 0.2, 0);
-      this.heldItemMesh = group;
-      this.heldItemAnchor.add(group);
-      return;
-    }
-
-    if (def.blockType !== undefined) {
-      // Mini block cube
-      const geo = new THREE.BoxGeometry(0.2, 0.2, 0.2);
-      const mat = new THREE.MeshStandardMaterial({ color: def.color });
-      this.heldItemMesh = new THREE.Mesh(geo, mat);
-      this.heldItemMesh.rotation.set(0.2, 0.4, 0);
-      this.heldItemAnchor.add(this.heldItemMesh);
-    } else {
-      // Tool stick / pickaxe
-      const group = new THREE.Group();
-      const handleGeo = new THREE.BoxGeometry(0.04, 0.4, 0.04);
-      const handleMat = new THREE.MeshStandardMaterial({ color: 0x8d6e63 });
-      const handle = new THREE.Mesh(handleGeo, handleMat);
-      group.add(handle);
-
-      const headGeo = new THREE.BoxGeometry(0.28, 0.08, 0.08);
-      const headMat = new THREE.MeshStandardMaterial({ color: 0xb0bec5, metalness: 0.5 });
-      const head = new THREE.Mesh(headGeo, headMat);
-      head.position.set(0, 0.2, 0);
-      group.add(head);
-
-      group.rotation.set(-0.8, 0.2, 0);
-      this.heldItemMesh = group;
-      this.heldItemAnchor.add(group);
-    }
+    this.heldItemMesh = createHeldItemMesh(itemId, 0.22);
+    this.heldItemAnchor.add(this.heldItemMesh);
   }
 
   setVisible(visible: boolean): void {
