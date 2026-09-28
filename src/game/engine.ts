@@ -241,16 +241,16 @@ export class Game {
       }
     }
 
-    // Toggle place mode with Q
-    if (this.input.isKeyJustPressed('KeyQ')) {
+    // Toggle place mode
+    if (this.input.isJustPressed('toggleMode')) {
       this.placeMode = !this.placeMode;
     }
 
-    // Scroll wheel for hotbar
-    if (this.input.isKeyJustPressed('KeyZ')) {
+    // Cycle hotbar slots
+    if (this.input.isJustPressed('hotbarPrev')) {
       this.selectedSlot = (this.selectedSlot - 1 + 9) % 9;
     }
-    if (this.input.isKeyJustPressed('KeyX')) {
+    if (this.input.isJustPressed('hotbarNext')) {
       this.selectedSlot = (this.selectedSlot + 1) % 9;
     }
 
@@ -468,7 +468,7 @@ export class Game {
 
   // ---- SETTINGS ----
   updateSettings(): void {
-    const totalItems = 13;
+    const totalItems = 15; // 3 volumes + 12 keybinds
 
     if (this.rebindingKey !== null) {
       const allKeys = [
@@ -515,15 +515,15 @@ export class Game {
       }
     }
 
-    if (this.settingsIndex >= 3 && this.settingsIndex <= 11) {
+    if (this.settingsIndex >= 3 && this.settingsIndex <= 14) {
       if (this.input.isKeyJustPressed('Enter')) {
-        const keybindKeys = ['up', 'down', 'left', 'right', 'attack', 'jump', 'interact', 'inventory', 'pause'];
+        const keybindKeys = ['up', 'down', 'left', 'right', 'attack', 'jump', 'interact', 'inventory', 'pause', 'toggleMode', 'hotbarPrev', 'hotbarNext'];
         this.rebindingKey = keybindKeys[this.settingsIndex - 3];
         this.audio.playUIClick();
       }
     }
 
-    if (this.input.isJustPressed('pause') || (this.settingsIndex === 12 && this.input.isKeyJustPressed('Enter'))) {
+    if (this.input.isJustPressed('pause') || (this.settingsIndex === 15 && this.input.isKeyJustPressed('Enter'))) {
       this.state = this.prevState === GameState.PAUSED ? GameState.PAUSED : GameState.MAIN_MENU;
       this.saveSettings();
       this.audio.playUIClick();

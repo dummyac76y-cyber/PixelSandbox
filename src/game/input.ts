@@ -12,6 +12,9 @@ export interface KeyBindings {
   inventory: string[];
   pause: string[];
   jump: string[];
+  toggleMode: string[];
+  hotbarPrev: string[];
+  hotbarNext: string[];
 }
 
 const DEFAULT_BINDINGS: KeyBindings = {
@@ -24,6 +27,9 @@ const DEFAULT_BINDINGS: KeyBindings = {
   inventory: ['KeyI'],
   pause: ['Escape'],
   jump: ['KeyK', 'ShiftLeft', 'ShiftRight'],
+  toggleMode: ['KeyQ'],
+  hotbarPrev: ['KeyZ'],
+  hotbarNext: ['KeyX'],
 };
 
 export class Input {

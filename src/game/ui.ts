@@ -621,8 +621,8 @@ export class UI {
     ctx.font = '8px monospace';
     ctx.fillText('KEYBINDS', 20, startY + 50);
 
-    const keybindLabels = ['Move Up', 'Move Down', 'Move Left', 'Move Right', 'Attack', 'Jump', 'Interact', 'Inventory', 'Pause'];
-    const keybindKeys = ['up', 'down', 'left', 'right', 'attack', 'jump', 'interact', 'inventory', 'pause'];
+    const keybindLabels = ['Move Up', 'Move Down', 'Move Left', 'Move Right', 'Attack', 'Jump', 'Interact', 'Inventory', 'Pause', 'Toggle Mode', 'Hotbar Prev', 'Hotbar Next'];
+    const keybindKeys = ['up', 'down', 'left', 'right', 'attack', 'jump', 'interact', 'inventory', 'pause', 'toggleMode', 'hotbarPrev', 'hotbarNext'];
     const keybindStartY = startY + 60;
 
     for (let i = 0; i < keybindLabels.length; i++) {
@@ -644,7 +644,7 @@ export class UI {
     }
 
     // Back button
-    const backIndex = 12; // After all keybinds
+    const backIndex = 15; // 3 volumes + 12 keybinds
     ctx.fillStyle = backIndex === menuIndex ? PALETTE.yellow : PALETTE.lightGray;
     ctx.font = '8px monospace';
     const backPrefix = backIndex === menuIndex ? '▶ ' : '  ';
