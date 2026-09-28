@@ -84,6 +84,33 @@ export const ITEMS: Record<string, Item> = {
     stackLimit: 999,
     value: 1,
   },
+  wood: {
+    id: 'wood',
+    name: 'Wood',
+    description: 'Building material',
+    icon: 'icon_wood',
+    type: ItemType.MATERIAL,
+    stackLimit: 99,
+    value: 1,
+  },
+  stone: {
+    id: 'stone',
+    name: 'Stone',
+    description: 'Building material',
+    icon: 'icon_stone',
+    type: ItemType.MATERIAL,
+    stackLimit: 99,
+    value: 1,
+  },
+  leaves: {
+    id: 'leaves',
+    name: 'Leaves',
+    description: 'Decorative blocks',
+    icon: 'icon_leaves',
+    type: ItemType.MATERIAL,
+    stackLimit: 99,
+    value: 1,
+  },
 };
 
 // ============================================================

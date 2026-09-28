@@ -818,6 +818,40 @@ const ICON_QUEST_ITEM = [
   '...00...',
 ];
 
+// Block icons (8x8)
+const ICON_WOOD = [
+  '44444444',
+  '40000004',
+  '40444404',
+  '40444404',
+  '40444404',
+  '40444404',
+  '40000004',
+  '44444444',
+];
+
+const ICON_STONE = [
+  '55555555',
+  '56666665',
+  '56555565',
+  '56555565',
+  '56555565',
+  '56555565',
+  '56666665',
+  '55555555',
+];
+
+const ICON_LEAVES = [
+  '33333333',
+  '3b3b3b3b',
+  '33333333',
+  '3b3b3b3b',
+  '33333333',
+  '3b3b3b3b',
+  '33333333',
+  '3b3b3b3b',
+];
+
 // ============================================================
 // SPRITE REGISTRY - Pre-render all sprites
 // ============================================================
@@ -888,6 +922,9 @@ export function initSprites(): Map<string, SpriteSheet> {
   register('icon_key', [ICON_KEY]);
   register('icon_coin', [ICON_COIN]);
   register('icon_quest', [ICON_QUEST_ITEM]);
+  register('icon_wood', [ICON_WOOD]);
+  register('icon_stone', [ICON_STONE]);
+  register('icon_leaves', [ICON_LEAVES]);
 
   return sprites;
 }

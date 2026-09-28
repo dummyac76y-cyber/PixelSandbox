@@ -311,10 +311,7 @@ export class Player {
       this.y += this.vy;
     }
 
-    // Clamp to map bounds
-    const area = world.getArea();
-    this.x = clamp(this.x, 0, area.width * TILE_SIZE - this.width);
-    this.y = clamp(this.y, 0, area.height * TILE_SIZE - this.height);
+    // Infinite world - no bounds clamping needed
   }
 
   startAttack(audio: AudioManager): void {
@@ -786,13 +783,11 @@ export class Enemy {
   }
 
   private pickPatrolPoint(world: World): void {
-    const area = world.getArea();
     let attempts = 0;
     while (attempts < 10) {
       const px = this.x + (Math.random() - 0.5) * 80;
       const py = this.y + (Math.random() - 0.5) * 80;
-      if (px > 0 && py > 0 && px < area.width * TILE_SIZE - this.width &&
-        py < area.height * TILE_SIZE - this.height && !world.isSolidAt(px, py)) {
+      if (!world.isSolidAt(px, py)) {
         this.patrolTarget = { x: px, y: py };
         return;
       }

@@ -514,19 +514,26 @@ export class UI {
     // Title
     ctx.fillStyle = PALETTE.white;
     ctx.font = '16px monospace';
-    const title = 'SHADOWS OF';
+    const title = 'PIXEL';
     const tw = ctx.measureText(title).width;
-    ctx.fillText(title, (INTERNAL_W - tw) / 2, 60);
+    ctx.fillText(title, (INTERNAL_W - tw) / 2, 50);
 
-    ctx.fillStyle = PALETTE.red;
+    ctx.fillStyle = PALETTE.green;
     ctx.font = '20px monospace';
-    const title2 = 'THE RUINS';
+    const title2 = 'SANDBOX';
     const tw2 = ctx.measureText(title2).width;
-    ctx.fillText(title2, (INTERNAL_W - tw2) / 2, 85);
+    ctx.fillText(title2, (INTERNAL_W - tw2) / 2, 75);
+
+    // Subtitle
+    ctx.fillStyle = PALETTE.lightGray;
+    ctx.font = '8px monospace';
+    const subtitle = 'Build. Explore. Create.';
+    const sw = ctx.measureText(subtitle).width;
+    ctx.fillText(subtitle, (INTERNAL_W - sw) / 2, 92);
 
     // Menu items
-    const items = ['New Game', hasSave ? 'Continue' : 'Continue (no save)', 'Settings', 'Credits'];
-    const startY = 120;
+    const items = ['New World', 'Settings', 'About'];
+    const startY = 115;
     for (let i = 0; i < items.length; i++) {
       ctx.fillStyle = i === menuIndex ? PALETTE.yellow : PALETTE.lightGray;
       ctx.font = '10px monospace';
@@ -557,7 +564,7 @@ export class UI {
     const tw = ctx.measureText(title).width;
     ctx.fillText(title, (INTERNAL_W - tw) / 2, 60);
 
-    const items = ['Resume', 'Save', 'Settings', 'Main Menu'];
+    const items = ['Resume', 'Settings', 'Main Menu'];
     const startY = 90;
     for (let i = 0; i < items.length; i++) {
       ctx.fillStyle = i === menuIndex ? PALETTE.yellow : PALETTE.lightGray;
