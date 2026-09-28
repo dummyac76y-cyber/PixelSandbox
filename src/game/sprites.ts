@@ -27,6 +27,20 @@ const COLOR_MAP: Record<string, string> = {
 // Sprite cache
 const spriteCache: Map<string, HTMLCanvasElement> = new Map();
 
+// The supplied atlas keeps the trees richly shaded while the procedural tiles
+// remain available as a fast fallback if the image has not finished loading.
+export const TREE_ATLAS_URL = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Trees_texture_shadow_source-IyzagUrGDSL30ZAfgG1Azc8mnB35yw.png';
+let treeAtlas: HTMLImageElement | null = null;
+
+export function getTreeAtlas(): HTMLImageElement | null {
+  if (!treeAtlas) {
+    treeAtlas = new Image();
+    treeAtlas.crossOrigin = 'anonymous';
+    treeAtlas.src = TREE_ATLAS_URL;
+  }
+  return treeAtlas.complete && treeAtlas.naturalWidth > 0 ? treeAtlas : null;
+}
+
 // Convert a string grid sprite to a canvas
 function spriteToCanvas(rows: string[], pixelSize: number = 1): HTMLCanvasElement {
   const h = rows.length;

@@ -6,7 +6,7 @@ import {
   INTERNAL_W, INTERNAL_H, FIXED_DT, TILE_SIZE, PALETTE,
   clamp, lerp, TileType, Rect
 } from './constants';
-import { initSprites, SpriteSheet } from './sprites';
+import { initSprites, SpriteSheet, getTreeAtlas } from './sprites';
 import { Input } from './input';
 import { AudioManager } from './audio';
 import { World, CHUNK_SIZE, isBreakable, tileToItem, itemToTile } from './world';
@@ -694,11 +694,19 @@ export class Game {
         if (this.world.getTile(tx * TILE_SIZE, ty * TILE_SIZE) === TileType.TREE) {
           const sx = tx * TILE_SIZE - cx;
           const sy = (ty - 1) * TILE_SIZE - cy;
-          const canopy = this.sprites.get('tile_tree_canopy');
-          if (canopy) {
-            ctx.globalAlpha = 0.85;
-            ctx.drawImage(canopy.frames[0], Math.floor(sx), Math.floor(sy));
-            ctx.globalAlpha = 1;
+          const atlas = getTreeAtlas();
+          if (atlas) {
+            // Use the large, shaded atlas tree and scale it into the pixel-world
+            // footprint. The trunk tile remains underneath for collision clarity.
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(atlas, 0, 0, 64, 80, Math.floor(sx - 8), Math.floor(sy - 20), 32, 40);
+          } else {
+            const canopy = this.sprites.get('tile_tree_canopy');
+            if (canopy) {
+              ctx.globalAlpha = 0.85;
+              ctx.drawImage(canopy.frames[0], Math.floor(sx), Math.floor(sy));
+              ctx.globalAlpha = 1;
+            }
           }
         }
       }
