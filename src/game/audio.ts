@@ -86,14 +86,27 @@ export class AudioManager {
 
   playBlockBreak(): void {
     // Crunchy breaking sound with multiple layers
-    this.playNoise(0.15, 0.3, this.sfxGain);
+    this.playNoise(0.12, 0.3, this.sfxGain);
     this.playTone(150, 0.08, 'sawtooth', 0.25, this.sfxGain);
     setTimeout(() => {
       this.playTone(100, 0.06, 'square', 0.2, this.sfxGain);
     }, 30);
-    setTimeout(() => {
-      this.playNoise(0.1, 0.2, this.sfxGain);
-    }, 50);
+  }
+
+  playBlockPlace(): void {
+    this.playNoise(0.04, 0.2, this.sfxGain);
+    this.playTone(120, 0.06, 'sine', 0.35, this.sfxGain);
+  }
+
+  playStep(): void {
+    this.playNoise(0.03, 0.12, this.sfxGain);
+    this.playTone(80, 0.04, 'triangle', 0.15, this.sfxGain);
+  }
+
+  playCraft(): void {
+    this.playTone(523, 0.08, 'sine', 0.25, this.sfxGain);
+    setTimeout(() => this.playTone(659, 0.08, 'sine', 0.25, this.sfxGain), 60);
+    setTimeout(() => this.playTone(1046, 0.14, 'sine', 0.3, this.sfxGain), 120);
   }
 
   playHurt(): void {
@@ -147,6 +160,21 @@ export class AudioManager {
 
   playUIHover(): void {
     this.playTone(440, 0.03, 'sine', 0.1, this.uiGain);
+  }
+
+  playItemPickup(): void {
+    if (!this.ctx || !this.sfxGain) return;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(659.25, this.ctx.currentTime); // E5
+    osc.frequency.exponentialRampToValueAtTime(987.77, this.ctx.currentTime + 0.1); // B5
+    gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+    osc.start();
+    osc.stop(this.ctx.currentTime + 0.12);
   }
 
   playUIError(): void {
@@ -216,7 +244,7 @@ export class AudioManager {
   }
 
   // ---- Helpers ----
-  private playTone(freq: number, duration: number, type: OscillatorType, volume: number, dest: GainNode | null): void {
+  playTone(freq: number, duration: number, type: OscillatorType, volume: number, dest: GainNode | null): void {
     if (!this.ctx || !dest) return;
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
@@ -230,7 +258,7 @@ export class AudioManager {
     osc.stop(this.ctx.currentTime + duration);
   }
 
-  private playNoise(duration: number, volume: number, dest: GainNode | null): void {
+  playNoise(duration: number, volume: number, dest: GainNode | null): void {
     if (!this.ctx || !dest) return;
     const bufferSize = this.ctx.sampleRate * duration;
     const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
