@@ -6,7 +6,7 @@ import {
   INTERNAL_W, INTERNAL_H, FIXED_DT, TILE_SIZE, PALETTE,
   clamp, lerp, TileType, Rect
 } from './constants';
-import { initSprites, SpriteSheet } from './sprites';
+import { initSprites, SpriteSheet, getTreeVariant } from './sprites';
 import { Input } from './input';
 import { AudioManager } from './audio';
 import { World, CHUNK_SIZE, isBreakable, tileToItem, itemToTile } from './world';
@@ -694,11 +694,33 @@ export class Game {
         if (this.world.getTile(tx * TILE_SIZE, ty * TILE_SIZE) === TileType.TREE) {
           const sx = tx * TILE_SIZE - cx;
           const sy = (ty - 1) * TILE_SIZE - cy;
-          const canopy = this.sprites.get('tile_tree_canopy');
-          if (canopy) {
-            ctx.globalAlpha = 0.85;
-            ctx.drawImage(canopy.frames[0], Math.floor(sx), Math.floor(sy));
-            ctx.globalAlpha = 1;
+          // Stable per-tile variation keeps the forest random without changing
+          // every frame: different silhouettes, scale, and occasional mirroring.
+          const seed = Math.abs((tx * 92821 + ty * 68917) | 0);
+          const variant = seed % 12;
+          const tree = getTreeVariant(variant);
+          if (tree) {
+            const width = 36 + (seed % 7);
+            const height = 46 + (seed % 9);
+            const drawX = Math.floor(sx + 8 - width / 2);
+            const drawY = Math.floor(sy + 16 - height);
+            ctx.imageSmoothingEnabled = false;
+            ctx.save();
+            if (seed % 3 === 0) {
+              ctx.translate(Math.floor(sx + 8), 0);
+              ctx.scale(-1, 1);
+              ctx.drawImage(tree, 0, 0, 64, 80, -Math.floor(width / 2), drawY, width, height);
+            } else {
+              ctx.drawImage(tree, drawX, drawY, width, height);
+            }
+            ctx.restore();
+          } else {
+            const canopy = this.sprites.get('tile_tree_canopy');
+            if (canopy) {
+              ctx.globalAlpha = 0.85;
+              ctx.drawImage(canopy.frames[0], Math.floor(sx), Math.floor(sy));
+              ctx.globalAlpha = 1;
+            }
           }
         }
       }

@@ -27,6 +27,52 @@ const COLOR_MAP: Record<string, string> = {
 // Sprite cache
 const spriteCache: Map<string, HTMLCanvasElement> = new Map();
 
+// The supplied atlas keeps the trees richly shaded while the procedural tiles
+// remain available as a fast fallback if the image has not finished loading.
+export const TREE_ATLAS_URL = 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Trees_texture_shadow_source-IyzagUrGDSL30ZAfgG1Azc8mnB35yw.png';
+let treeAtlas: HTMLImageElement | null = null;
+const treeCropCache = new Map<string, HTMLCanvasElement>();
+
+export function getTreeAtlas(): HTMLImageElement | null {
+  if (!treeAtlas) {
+    treeAtlas = new Image();
+    treeAtlas.crossOrigin = 'anonymous';
+    treeAtlas.src = TREE_ATLAS_URL;
+  }
+  return treeAtlas.complete && treeAtlas.naturalWidth > 0 ? treeAtlas : null;
+}
+
+export function getTreeVariant(variant: number): HTMLCanvasElement | null {
+  const atlas = getTreeAtlas();
+  if (!atlas) return null;
+
+  const cropX = (variant % 8) * 64;
+  const cropY = variant >= 8 ? 80 : 0;
+  const key = `${cropX}:${cropY}`;
+  const cached = treeCropCache.get(key);
+  if (cached) return cached;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 64;
+  canvas.height = 80;
+  const ctx = canvas.getContext('2d')!;
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(atlas, cropX, cropY, 64, 80, 0, 0, 64, 80);
+
+  // The supplied atlas has a keyed green preview background. Make only that
+  // background transparent while preserving the tree's green leaves.
+  const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  for (let i = 0; i < image.data.length; i += 4) {
+    const r = image.data[i];
+    const g = image.data[i + 1];
+    const b = image.data[i + 2];
+    if (g > 150 && g > r * 1.35 && g > b * 1.25 && r < 90) image.data[i + 3] = 0;
+  }
+  ctx.putImageData(image, 0, 0);
+  treeCropCache.set(key, canvas);
+  return canvas;
+}
+
 // Convert a string grid sprite to a canvas
 function spriteToCanvas(rows: string[], pixelSize: number = 1): HTMLCanvasElement {
   const h = rows.length;
