@@ -62,7 +62,7 @@ export class Game {
   breakTarget: { tx: number; ty: number } | null = null;
   placeMode: boolean = false;
   selectedSlot: number = 0;
-  hotbarItems: string[] = ['wood', 'stone', 'leaves', '', '', '', '', '', ''];
+  hotbarItems: string[] = ['sword_1', 'wood', 'stone', 'leaves', '', '', '', '', ''];
   showHelp: boolean = true;
   helpTimer: number = 300; // Show help for 5 seconds at start
 
@@ -197,7 +197,8 @@ export class Game {
 
   startNewGame(): void {
     this.world = new World();
-    this.player = new Player(0, 0);
+    const spawn = this.world.findSafeSpawn();
+    this.player = new Player(spawn.x, spawn.y);
     this.inventory = new Inventory();
     // Give starting items
     this.inventory.addItem('wood', 10);
@@ -790,12 +791,37 @@ export class Game {
           ctx.fillRect(sx + 6, sy - 7, 3, 2);
         }
 
-        // Stone blocks get a top edge and a darker right edge for depth.
+        // Stone blocks get a top edge, bevel, and small mineral pixels for depth.
         if (tile === TileType.WALL || tile === TileType.PILLAR) {
           ctx.fillStyle = 'rgba(255, 241, 232, 0.2)';
           ctx.fillRect(sx + 1, sy + 1, 14, 1);
           ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
           ctx.fillRect(sx + 14, sy + 2, 2, 13);
+          ctx.fillStyle = 'rgba(220, 225, 210, 0.35)';
+          ctx.fillRect(sx + 4, sy + 6, 2, 1);
+          ctx.fillRect(sx + 10, sy + 11, 1, 2);
+        }
+
+        // Blocky grass blades, dirt flecks, and leaf pixels keep terrain from feeling flat.
+        const textureVariant = Math.abs((tx * 17 + ty * 29) % 4);
+        if (tile === TileType.GRASS) {
+          ctx.fillStyle = 'rgba(126, 201, 91, 0.45)';
+          ctx.fillRect(sx + 2 + textureVariant * 3, sy + 12, 1, 2);
+          ctx.fillRect(sx + 4 + textureVariant * 2, sy + 13, 1, 1);
+          ctx.fillStyle = 'rgba(44, 91, 48, 0.35)';
+          ctx.fillRect(sx + 11 - textureVariant, sy + 4, 1, 1);
+        }
+        if (tile === TileType.TREE) {
+          ctx.fillStyle = 'rgba(105, 176, 73, 0.5)';
+          ctx.fillRect(sx + 1, sy - 2, 3, 2);
+          ctx.fillRect(sx + 12, sy + 1, 2, 2);
+          ctx.fillStyle = 'rgba(66, 39, 24, 0.55)';
+          ctx.fillRect(sx + 5, sy + 9, 2, 1);
+        }
+        if (tile === TileType.BUSH) {
+          ctx.fillStyle = 'rgba(151, 211, 77, 0.55)';
+          ctx.fillRect(sx + 3, sy + 4, 2, 2);
+          ctx.fillRect(sx + 10, sy + 8, 2, 2);
         }
       }
     }
