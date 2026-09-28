@@ -22,12 +22,12 @@ const DEFAULT_BINDINGS: KeyBindings = {
   down: ['KeyS', 'ArrowDown'],
   left: ['KeyA', 'ArrowLeft'],
   right: ['KeyD', 'ArrowRight'],
-  attack: ['Space', 'KeyJ'],
+  attack: ['KeyQ'],
   interact: ['KeyE'],
   inventory: ['KeyI'],
   pause: ['Escape'],
-  jump: ['KeyK', 'ShiftLeft', 'ShiftRight'],
-  toggleMode: ['KeyQ'],
+  jump: ['Space'],
+  toggleMode: ['Tab', 'KeyF'],
   hotbarPrev: ['KeyZ'],
   hotbarNext: ['KeyX'],
 };
@@ -64,7 +64,7 @@ export class Input {
       }
       this.keys.add(e.code);
       // Prevent default for game keys
-      if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+      if (['Space', 'Tab', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
         e.preventDefault();
       }
     });
