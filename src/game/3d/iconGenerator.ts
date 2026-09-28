@@ -1,11 +1,54 @@
 // ============================================================
-// ICON GENERATOR - 32x32 Authentic Indie Pixel Art Item & Block Sprites
+// ICON GENERATOR - Item & Block Sprites with PNG Resource Pack Support
 // ============================================================
 import { ITEM_DEFS } from './resources';
 
 const spriteCache: Record<string, string> = {};
 
-// Helper: draw an isometric 32x32 voxel cube on canvas
+// Primary resource PNG mapping for items and blocks in public/assets/resources/
+const ITEM_RESOURCE_MAP: Record<string, string> = {
+  // Blocks
+  grass: '/assets/resources/blocks/grass_block_top.png',
+  dirt: '/assets/resources/blocks/dirt.png',
+  stone: '/assets/resources/blocks/stone.png',
+  cobblestone: '/assets/resources/blocks/cobblestone.png',
+  wood: '/assets/resources/blocks/oak_log.png',
+  planks: '/assets/resources/blocks/oak_planks.png',
+  leaves: '/assets/resources/blocks/oak_leaves.png',
+  sand: '/assets/resources/blocks/sand.png',
+  glass: '/assets/resources/blocks/glass.png',
+  brick: '/assets/resources/blocks/bricks.png',
+  stone_bricks: '/assets/resources/blocks/stone_bricks.png',
+  torch: '/assets/resources/blocks/torch.png',
+  crafting_table: '/assets/resources/blocks/crafting_table_front.png',
+  bookshelf: '/assets/resources/blocks/bookshelf.png',
+  coal_ore: '/assets/resources/blocks/coal_ore.png',
+  iron_ore: '/assets/resources/blocks/iron_ore.png',
+  gold_ore: '/assets/resources/blocks/gold_ore.png',
+  diamond_ore: '/assets/resources/blocks/diamond_ore.png',
+  snow: '/assets/resources/blocks/snow.png',
+
+  // Items & Tools
+  stick: '/assets/resources/items/stick.png',
+  coal: '/assets/resources/items/coal.png',
+  iron_ingot: '/assets/resources/items/iron_ingot.png',
+  gold_ingot: '/assets/resources/items/gold_ingot.png',
+  diamond: '/assets/resources/items/diamond.png',
+
+  pickaxe_wood: '/assets/resources/items/wooden_pickaxe.png',
+  pickaxe_stone: '/assets/resources/items/stone_pickaxe.png',
+  pickaxe_iron: '/assets/resources/items/iron_pickaxe.png',
+  pickaxe_diamond: '/assets/resources/items/diamond_pickaxe.png',
+
+  axe_wood: '/assets/resources/items/wooden_axe.png',
+  axe_iron: '/assets/resources/items/iron_axe.png',
+
+  sword_wood: '/assets/resources/items/wooden_sword.png',
+  sword_iron: '/assets/resources/items/iron_sword.png',
+  sword_diamond: '/assets/resources/items/diamond_sword.png',
+};
+
+// Helper: draw an isometric 32x32 voxel cube on canvas for fallbacks
 function drawIsometricBlock(
   ctx: CanvasRenderingContext2D,
   topColors: [string, string],
@@ -13,10 +56,9 @@ function drawIsometricBlock(
   rightColors: [string, string],
   decorFn?: (c: CanvasRenderingContext2D) => void
 ) {
-  // Clear
   ctx.clearRect(0, 0, 32, 32);
 
-  // Top face (isometric rhombus): (16, 4) -> (27, 10) -> (16, 16) -> (5, 10)
+  // Top face
   ctx.beginPath();
   ctx.moveTo(16, 3);
   ctx.lineTo(28, 10);
@@ -39,7 +81,7 @@ function drawIsometricBlock(
   ctx.closePath();
   ctx.fill();
 
-  // Left face: (4, 10) -> (16, 17) -> (16, 29) -> (4, 22)
+  // Left face
   ctx.beginPath();
   ctx.moveTo(4, 10);
   ctx.lineTo(16, 17);
@@ -54,7 +96,7 @@ function drawIsometricBlock(
   ctx.fillStyle = leftColors[1];
   ctx.fillRect(6, 14, 8, 4);
 
-  // Right face: (16, 17) -> (28, 10) -> (28, 22) -> (16, 29)
+  // Right face
   ctx.beginPath();
   ctx.moveTo(16, 17);
   ctx.lineTo(28, 10);
@@ -74,8 +116,8 @@ function drawIsometricBlock(
   }
 }
 
-// Generate a 32x32 sprite for any item
-export function getItemSprite(itemId: string): string {
+// Generate fallback 32x32 sprite using canvas drawing
+export function getItemFallbackSprite(itemId: string): string {
   if (spriteCache[itemId]) return spriteCache[itemId];
 
   const canvas = document.createElement('canvas');
@@ -88,6 +130,7 @@ export function getItemSprite(itemId: string): string {
   const color = def ? def.color : '#aaaaaa';
 
   switch (itemId) {
+    case 'grass':
     case 'grass_block':
       drawIsometricBlock(
         ctx,
@@ -95,7 +138,6 @@ export function getItemSprite(itemId: string): string {
         ['#7a5230', '#634226'],
         ['#5c3d23', '#49301c'],
         (c) => {
-          // Grass overhang on sides
           c.fillStyle = '#4ca64c';
           c.beginPath();
           c.moveTo(4, 10);
@@ -154,7 +196,6 @@ export function getItemSprite(itemId: string): string {
     case 'wood':
     case 'oak_log':
       drawIsometricBlock(ctx, ['#d7a15c', '#b8823d'], ['#6d4c38', '#583c2c'], ['#583c2c', '#432d20'], (c) => {
-        // Tree rings on top
         c.strokeStyle = '#8d5c27';
         c.lineWidth = 1;
         c.strokeRect(13, 8, 6, 4);
@@ -195,7 +236,6 @@ export function getItemSprite(itemId: string): string {
       ctx.strokeStyle = '#93c5fd';
       ctx.lineWidth = 2;
       ctx.strokeRect(4, 4, 24, 24);
-      // Glint streaks
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
@@ -206,17 +246,8 @@ export function getItemSprite(itemId: string): string {
       ctx.stroke();
       break;
 
-    case 'bricks':
-      drawIsometricBlock(ctx, ['#d35230', '#b94020'], ['#a03316', '#87280e'], ['#87280e', '#6e1d07'], (c) => {
-        c.fillStyle = '#e2e8f0';
-        c.fillRect(6, 16, 9, 1);
-        c.fillRect(18, 17, 9, 1);
-      });
-      break;
-
     case 'bookshelf':
       drawIsometricBlock(ctx, ['#caa472', '#b38b58'], ['#9e7747', '#876337'], ['#876337', '#6e4f29'], (c) => {
-        // Colored book spines
         const bCols = ['#ef4444', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
         for (let i = 0; i < 4; i++) {
           c.fillStyle = bCols[i];
@@ -227,7 +258,6 @@ export function getItemSprite(itemId: string): string {
 
     case 'crafting_table':
       drawIsometricBlock(ctx, ['#caa472', '#b38b58'], ['#876337', '#6e4f29'], ['#6e4f29', '#553d1e'], (c) => {
-        // Grid on top
         c.strokeStyle = '#3e2712';
         c.lineWidth = 1;
         c.strokeRect(12, 7, 8, 6);
@@ -257,7 +287,6 @@ export function getItemSprite(itemId: string): string {
         c.fillRect(8, 16, 3, 3);
         c.fillRect(20, 16, 4, 3);
         c.fillRect(10, 22, 3, 2);
-        // Specular glint
         c.fillStyle = '#ffffff';
         c.fillRect(15, 9, 1, 1);
         c.fillRect(21, 17, 1, 1);
@@ -269,10 +298,8 @@ export function getItemSprite(itemId: string): string {
       drawIsometricBlock(ctx, ['#ffffff', '#f1f5f9'], ['#e2e8f0', '#cbd5e1'], ['#cbd5e1', '#94a3b8']);
       break;
 
-    // Torch - slender wooden stick with burning ember tip!
     case 'torch': {
       ctx.clearRect(0, 0, 32, 32);
-      // Flame glow aura
       const grad = ctx.createRadialGradient(16, 8, 2, 16, 8, 10);
       grad.addColorStop(0, 'rgba(251, 191, 36, 0.7)');
       grad.addColorStop(1, 'rgba(245, 158, 11, 0)');
@@ -281,17 +308,14 @@ export function getItemSprite(itemId: string): string {
       ctx.arc(16, 8, 9, 0, Math.PI * 2);
       ctx.fill();
 
-      // Slender stick
       ctx.fillStyle = '#5c3d23';
       ctx.fillRect(14, 11, 4, 18);
       ctx.fillStyle = '#7c5230';
       ctx.fillRect(14, 11, 2, 18);
 
-      // Coal head
       ctx.fillStyle = '#262626';
       ctx.fillRect(13, 8, 6, 5);
 
-      // Flame
       ctx.fillStyle = '#ef4444';
       ctx.fillRect(14, 5, 4, 5);
       ctx.fillStyle = '#f59e0b';
@@ -301,7 +325,6 @@ export function getItemSprite(itemId: string): string {
       break;
     }
 
-    // Tools: Pickaxes
     case 'pickaxe_wood':
     case 'wooden_pickaxe':
     case 'pickaxe_stone':
@@ -323,7 +346,6 @@ export function getItemSprite(itemId: string): string {
       const [headDark, headLight] = headCols[itemId] || ['#64748b', '#94a3b8'];
       ctx.clearRect(0, 0, 32, 32);
 
-      // Wooden handle (diagonal)
       ctx.strokeStyle = '#5c3d23';
       ctx.lineWidth = 2.5;
       ctx.beginPath();
@@ -331,7 +353,6 @@ export function getItemSprite(itemId: string): string {
       ctx.lineTo(21, 11);
       ctx.stroke();
 
-      // Pickaxe head arch
       ctx.lineWidth = 3.5;
       ctx.strokeStyle = headDark;
       ctx.beginPath();
@@ -350,7 +371,6 @@ export function getItemSprite(itemId: string): string {
       break;
     }
 
-    // Tools: Axes
     case 'axe_wood':
     case 'wooden_axe':
     case 'axe_stone':
@@ -372,7 +392,6 @@ export function getItemSprite(itemId: string): string {
       const [headDark, headLight] = headCols[itemId] || ['#64748b', '#94a3b8'];
       ctx.clearRect(0, 0, 32, 32);
 
-      // Wooden handle
       ctx.strokeStyle = '#5c3d23';
       ctx.lineWidth = 2.5;
       ctx.beginPath();
@@ -380,7 +399,6 @@ export function getItemSprite(itemId: string): string {
       ctx.lineTo(22, 10);
       ctx.stroke();
 
-      // Axe blade
       ctx.fillStyle = headDark;
       ctx.beginPath();
       ctx.moveTo(17, 7);
@@ -395,7 +413,6 @@ export function getItemSprite(itemId: string): string {
       break;
     }
 
-    // Tools: Swords
     case 'sword_wood':
     case 'wooden_sword':
     case 'sword_stone':
@@ -417,7 +434,6 @@ export function getItemSprite(itemId: string): string {
       const [bladeDark, bladeLight] = bladeCols[itemId] || ['#64748b', '#94a3b8'];
       ctx.clearRect(0, 0, 32, 32);
 
-      // Blade (diagonal)
       ctx.lineWidth = 4;
       ctx.strokeStyle = bladeDark;
       ctx.beginPath();
@@ -432,18 +448,15 @@ export function getItemSprite(itemId: string): string {
       ctx.lineTo(25, 7);
       ctx.stroke();
 
-      // Guard
       ctx.fillStyle = '#3e2712';
       ctx.fillRect(9, 21, 6, 2);
       ctx.fillRect(11, 19, 2, 6);
 
-      // Hilt
       ctx.fillStyle = '#7c5230';
       ctx.fillRect(7, 24, 3, 3);
       break;
     }
 
-    // Stick
     case 'stick': {
       ctx.clearRect(0, 0, 32, 32);
       ctx.strokeStyle = '#5c3d23';
@@ -462,7 +475,6 @@ export function getItemSprite(itemId: string): string {
       break;
     }
 
-    // Materials: Ingot / Gem / Coal
     case 'coal': {
       ctx.clearRect(0, 0, 32, 32);
       ctx.fillStyle = '#1c1917';
@@ -490,7 +502,6 @@ export function getItemSprite(itemId: string): string {
       const light = isGold ? '#fef08a' : '#ffffff';
 
       ctx.clearRect(0, 0, 32, 32);
-      // Ingot bar
       ctx.fillStyle = main;
       ctx.beginPath();
       ctx.moveTo(6, 18);
@@ -525,7 +536,6 @@ export function getItemSprite(itemId: string): string {
       ctx.closePath();
       ctx.fill();
 
-      // Facets
       ctx.strokeStyle = '#0284c7';
       ctx.lineWidth = 1;
       ctx.stroke();
@@ -545,7 +555,6 @@ export function getItemSprite(itemId: string): string {
     }
 
     default:
-      // Generic block fallback
       drawIsometricBlock(ctx, [color, color], [color, color], [color, color]);
       break;
   }
@@ -553,4 +562,12 @@ export function getItemSprite(itemId: string): string {
   const url = canvas.toDataURL('image/png');
   spriteCache[itemId] = url;
   return url;
+}
+
+// Primary item sprite retriever: attempts to return PNG resource URL or falls back to canvas sprite
+export function getItemSprite(itemId: string): string {
+  if (ITEM_RESOURCE_MAP[itemId]) {
+    return ITEM_RESOURCE_MAP[itemId];
+  }
+  return getItemFallbackSprite(itemId);
 }
