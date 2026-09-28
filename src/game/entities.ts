@@ -311,6 +311,19 @@ export class Player {
       this.y += this.vy;
     }
 
+    // Anti-stuck safety net: if we somehow ended up overlapping a solid tile
+    // (e.g. old save spawned inside terrain), slide out to the nearest free spot
+    // instead of freezing in place forever.
+    const escape = world.escapeIfStuck(this.getHurtbox());
+    if (escape) {
+      const ox = (this.width - this.hurtboxW) / 2;
+      const oy = this.height - this.hurtboxH;
+      this.x = escape.x - ox;
+      this.y = escape.y - oy;
+      this.vx = 0;
+      this.vy = 0;
+    }
+
     // Infinite world - no bounds clamping needed
   }
 
