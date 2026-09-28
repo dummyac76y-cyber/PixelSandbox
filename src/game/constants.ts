@@ -111,12 +111,6 @@ export enum TileType {
   ROOF = 15,
   PILLAR = 16,
   BOSS_DOOR = 17,
-  SAND = 18,
-  // Tree variants - trees vary within their biome
-  TREE_PINE = 19,
-  TREE_OAK = 20,
-  TREE_BIRCH = 21,
-  TREE_DARK = 22,
 }
 
 // Area IDs
