@@ -86,6 +86,7 @@ export class Game {
     this.inventory = new Inventory();
     this.particles = new ParticleSystem();
 
+    // Temporary spawn; startNewGame() finds a guaranteed-safe spawn position
     this.player = new Player(0, 0);
   }
 
@@ -193,7 +194,9 @@ export class Game {
 
   startNewGame(): void {
     this.world = new World();
-    this.player = new Player(0, 0);
+    // Find a safe spawn (never inside trees/walls/water so we don't start stuck)
+    const spawn = this.world.findSpawnPosition(0, 0, 16, 16);
+    this.player = new Player(spawn.x, spawn.y);
     this.inventory = new Inventory();
     // Give starting items
     this.inventory.addItem('wood', 10);
