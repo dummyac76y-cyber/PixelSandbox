@@ -84,6 +84,18 @@ export class AudioManager {
     this.playTone(200, 0.06, 'square', 0.3, this.sfxGain);
   }
 
+  playBlockBreak(): void {
+    // Crunchy breaking sound with multiple layers
+    this.playNoise(0.15, 0.3, this.sfxGain);
+    this.playTone(150, 0.08, 'sawtooth', 0.25, this.sfxGain);
+    setTimeout(() => {
+      this.playTone(100, 0.06, 'square', 0.2, this.sfxGain);
+    }, 30);
+    setTimeout(() => {
+      this.playNoise(0.1, 0.2, this.sfxGain);
+    }, 50);
+  }
+
   playHurt(): void {
     this.playTone(150, 0.1, 'square', 0.4, this.sfxGain);
     setTimeout(() => this.playTone(100, 0.1, 'square', 0.3, this.sfxGain), 50);

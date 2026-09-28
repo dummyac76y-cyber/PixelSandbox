@@ -63,6 +63,8 @@ export class Game {
   placeMode: boolean = false;
   selectedSlot: number = 0;
   hotbarItems: string[] = ['wood', 'stone', 'leaves', '', '', '', '', '', ''];
+  showHelp: boolean = true;
+  helpTimer: number = 300; // Show help for 5 seconds at start
 
   // Volumes
   volumes: number[] = [0.7, 0.4, 0.6];
@@ -213,6 +215,14 @@ export class Game {
   updatePlaying(): void {
     this.world.update();
 
+    // Update help timer
+    if (this.helpTimer > 0) {
+      this.helpTimer--;
+      if (this.helpTimer <= 0) {
+        this.showHelp = false;
+      }
+    }
+
     const movement = this.input.getMovement();
     const pausePressed = this.input.isJustPressed('pause');
     const inventoryPressed = this.input.isJustPressed('inventory');
@@ -325,17 +335,42 @@ export class Game {
             }
           }
         }
-        this.audio.playHit();
-        this.shakeTimer = 3;
+        
+        // Play breaking sound
+        this.audio.playBlockBreak();
+        this.shakeTimer = 4;
 
-        // Particles
+        // Enhanced breaking animation - multiple particle bursts
         const particleColor = brokenTile === TileType.TREE ? PALETTE.brown :
           brokenTile === TileType.BUSH ? PALETTE.darkGreen :
-            brokenTile === TileType.WALL ? PALETTE.lightGray : PALETTE.darkGray;
+            brokenTile === TileType.WALL ? PALETTE.lightGray : 
+              brokenTile === TileType.FENCE ? PALETTE.brown : PALETTE.darkGray;
+        
+        // Main debris particles
         this.particles.emit(
           tx * TILE_SIZE + 8, ty * TILE_SIZE + 8,
-          8, particleColor, 1.5, 20, 2
+          12, particleColor, 2, 25, 2, 0.1
         );
+        
+        // Secondary dust particles
+        this.particles.emit(
+          tx * TILE_SIZE + 8, ty * TILE_SIZE + 8,
+          6, PALETTE.lightGray, 1, 15, 1, 0.05
+        );
+        
+        // Sparkle effect
+        this.particles.emit(
+          tx * TILE_SIZE + 8, ty * TILE_SIZE + 8,
+          4, PALETTE.white, 1.5, 10, 1
+        );
+        
+        // Show item pickup notification
+        if (itemId) {
+          const item = ITEMS[itemId];
+          if (item) {
+            this.ui.showNotification(`+1 ${item.name}`, 60);
+          }
+        }
       }
     }
   }
@@ -680,6 +715,15 @@ export class Game {
       ctx.fillStyle = PALETTE.green;
       ctx.font = '8px monospace';
       ctx.fillText('PLACE MODE [Q]', 4, INTERNAL_H - 30);
+    } else {
+      ctx.fillStyle = PALETTE.red;
+      ctx.font = '8px monospace';
+      ctx.fillText('BREAK MODE [Q]', 4, INTERNAL_H - 30);
+    }
+
+    // ---- HELP OVERLAY ----
+    if (this.showHelp && this.helpTimer > 0) {
+      this.drawHelpOverlay(ctx);
     }
 
     // ---- OVERLAYS ----
@@ -764,6 +808,53 @@ export class Game {
       ctx.font = '5px monospace';
       ctx.fillText(`${i + 1}`, sx + 1, sy + 6);
     }
+  }
+
+  drawHelpOverlay(ctx: CanvasRenderingContext2D): void {
+    const alpha = Math.min(1, this.helpTimer / 60);
+    ctx.globalAlpha = alpha * 0.85;
+    
+    // Background
+    const boxW = 200;
+    const boxH = 80;
+    const boxX = (INTERNAL_W - boxW) / 2;
+    const boxY = 30;
+    
+    ctx.fillStyle = PALETTE.black;
+    ctx.fillRect(boxX, boxY, boxW, boxH);
+    ctx.strokeStyle = PALETTE.yellow;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(boxX, boxY, boxW, boxH);
+    
+    ctx.globalAlpha = alpha;
+    
+    // Title
+    ctx.fillStyle = PALETTE.yellow;
+    ctx.font = '10px monospace';
+    const title = 'CONTROLS';
+    const tw = ctx.measureText(title).width;
+    ctx.fillText(title, boxX + (boxW - tw) / 2, boxY + 12);
+    
+    // Controls list
+    ctx.fillStyle = PALETTE.white;
+    ctx.font = '7px monospace';
+    const controls = [
+      'WASD/Arrows: Move',
+      'Space/J: Break/Place Block',
+      'Q: Toggle Break/Place Mode',
+      'Z/X: Cycle Hotbar',
+      '1-9: Select Hotbar Slot',
+      'K/Shift: Jump',
+      'I: Inventory',
+    ];
+    
+    let y = boxY + 25;
+    for (const line of controls) {
+      ctx.fillText(line, boxX + 10, y);
+      y += 9;
+    }
+    
+    ctx.globalAlpha = 1;
   }
 
   drawPlayer(ctx: CanvasRenderingContext2D, cx: number, cy: number): void {
