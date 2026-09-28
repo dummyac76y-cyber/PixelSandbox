@@ -92,48 +92,37 @@ export class Controls3D {
       this.isMouseDown = false;
     });
 
-    // Hotbar wheel: scroll exactly one slot per wheel direction, including
-    // high-resolution mouse wheels and trackpads, without browser scrolling.
+    // Hotbar wheel: accumulate wheel motion so high-resolution mouse wheels
+    // and trackpads scroll smoothly, one hotbar slot per threshold.
     let wheelAccumulator = 0;
-    let lastWheelTime = 0;
     window.addEventListener('wheel', (e) => {
-      // Do not steal normal page scrolling when the pointer is over an input/UI control.
       const target = e.target as HTMLElement | null;
       if (target && (target.closest('input, textarea, select, button, [contenteditable="true"]') || target.closest('[data-no-hotbar-wheel]'))) {
         return;
       }
 
-      // The game canvas is the intended target. If pointer lock is active, always accept it.
-      // Otherwise only handle wheel while the pointer is over the game canvas.
       const overGame = e.target === this.domElement || this.domElement.contains(e.target as Node);
       if (!this.isLocked && !overGame) return;
 
       e.preventDefault();
 
-      // Normalize pixel/line/page wheel modes to a stable sign.
       const rawDelta = e.deltaMode === WheelEvent.DOM_DELTA_LINE ? e.deltaY * 16
         : e.deltaMode === WheelEvent.DOM_DELTA_PAGE ? e.deltaY * window.innerHeight
         : e.deltaY;
       if (!rawDelta) return;
 
-      const now = performance.now();
-      const minInterval = 35;
-      if (now - lastWheelTime < minInterval) {
-        wheelAccumulator += rawDelta;
-      } else {
-        wheelAccumulator += rawDelta;
-      }
-
-      // Typical wheel notch is around 100px; trackpads may produce many small events.
-      // Convert accumulated motion into one or more intentional slot steps.
+      wheelAccumulator += rawDelta;
       const threshold = 45;
+
       while (Math.abs(wheelAccumulator) >= threshold) {
         const direction = wheelAccumulator > 0 ? 1 : -1;
         wheelAccumulator -= direction * threshold;
-        if (this.onSlotScroll) {
-          this.onSlotScroll(direction);
+
+        if (this.onSlotChange) {
+          // game3d.ts treats values 0..8 as absolute slots and other values as deltas.
+          // Use +10 for scroll-down so it becomes a +1 delta; -1 is already a delta.
+          this.onSlotChange(direction > 0 ? 10 : -1);
         }
-        lastWheelTime = now;
       }
     }, { passive: false });
 
@@ -171,12 +160,8 @@ export class Controls3D {
       this.keys = {};
       this.isMiningHeld = false;
       this.isMouseDown = false;
-      this.wheelReset();
+      wheelAccumulator = 0;
     });
-  }
-
-  private wheelReset(): void {
-    // Intentionally empty hook; wheel state is local to the event handler.
   }
 
   private clampPitch(): void {
