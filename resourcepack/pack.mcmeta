@@ -1,0 +1,7 @@
+{
+   "pack": {
+      "pack_format": 34,
+      "description": "Please Diamond/heart, like, comment and subscribe on PMC",
+      "supported_formats": {"min_inclusive": 1, "max_inclusive": 100}
+   }
+}
