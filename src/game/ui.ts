@@ -241,6 +241,9 @@ export class UI {
       const btw = ctx.measureText(bossText).width;
       ctx.fillText(bossText, barX + (barW - btw) / 2, barY - 2);
     }
+
+    // Menu button (top-right corner)
+    this.drawMenuButton(ctx);
   }
 
   private drawHeart(ctx: CanvasRenderingContext2D, x: number, y: number, size: number): void {
@@ -539,6 +542,9 @@ export class UI {
     const hint = 'Arrow keys to select, Enter to confirm';
     const hw = ctx.measureText(hint).width;
     ctx.fillText(hint, (INTERNAL_W - hw) / 2, INTERNAL_H - 10);
+
+    // Settings gear icon (bottom-right corner)
+    this.drawSettingsButton(ctx, INTERNAL_W - 20, INTERNAL_H - 20);
   }
 
   drawPauseMenu(ctx: CanvasRenderingContext2D, menuIndex: number): void {
@@ -561,41 +567,132 @@ export class UI {
       const iw = ctx.measureText(text).width;
       ctx.fillText(text, (INTERNAL_W - iw) / 2, startY + i * 18);
     }
+
+    // Settings gear icon (bottom-right corner)
+    this.drawSettingsButton(ctx, INTERNAL_W - 20, INTERNAL_H - 20);
   }
 
-  drawSettings(ctx: CanvasRenderingContext2D, menuIndex: number, volumes: number[]): void {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+  drawSettings(ctx: CanvasRenderingContext2D, menuIndex: number, volumes: number[], keybinds: any, rebindingKey: string | null): void {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
     ctx.fillRect(0, 0, INTERNAL_W, INTERNAL_H);
 
     ctx.fillStyle = PALETTE.white;
     ctx.font = '12px monospace';
     const title = 'SETTINGS';
     const tw = ctx.measureText(title).width;
-    ctx.fillText(title, (INTERNAL_W - tw) / 2, 30);
+    ctx.fillText(title, (INTERNAL_W - tw) / 2, 20);
 
-    const labels = ['Master Volume', 'Music Volume', 'SFX Volume', 'Back'];
-    const startY = 60;
-    for (let i = 0; i < labels.length; i++) {
+    // Volume section
+    ctx.fillStyle = PALETTE.yellow;
+    ctx.font = '8px monospace';
+    ctx.fillText('VOLUME', 20, 35);
+
+    const volumeLabels = ['Master', 'Music', 'SFX'];
+    const startY = 45;
+    for (let i = 0; i < 3; i++) {
       ctx.fillStyle = i === menuIndex ? PALETTE.yellow : PALETTE.lightGray;
       ctx.font = '8px monospace';
       const prefix = i === menuIndex ? '▶ ' : '  ';
-      ctx.fillText(prefix + labels[i], 80, startY + i * 20);
+      ctx.fillText(prefix + volumeLabels[i], 25, startY + i * 14);
 
-      if (i < 3) {
-        // Volume bar
-        const barX = 200;
-        const barW = 80;
-        const barY = startY + i * 20 - 6;
-        ctx.fillStyle = PALETTE.darkGray;
-        ctx.fillRect(barX, barY, barW, 6);
-        ctx.fillStyle = PALETTE.green;
-        ctx.fillRect(barX, barY, Math.floor(volumes[i] * barW), 6);
-      }
+      // Volume bar
+      const barX = 100;
+      const barW = 80;
+      const barY = startY + i * 14 - 5;
+      ctx.fillStyle = PALETTE.darkGray;
+      ctx.fillRect(barX, barY, barW, 6);
+      ctx.fillStyle = PALETTE.green;
+      ctx.fillRect(barX, barY, Math.floor(volumes[i] * barW), 6);
+      
+      // Percentage
+      ctx.fillStyle = PALETTE.white;
+      ctx.fillText(`${Math.floor(volumes[i] * 100)}%`, barX + barW + 5, startY + i * 14);
     }
 
+    // Keybinds section
+    ctx.fillStyle = PALETTE.yellow;
+    ctx.font = '8px monospace';
+    ctx.fillText('KEYBINDS', 20, startY + 50);
+
+    const keybindLabels = ['Move Up', 'Move Down', 'Move Left', 'Move Right', 'Attack', 'Jump', 'Interact', 'Inventory', 'Pause'];
+    const keybindKeys = ['up', 'down', 'left', 'right', 'attack', 'jump', 'interact', 'inventory', 'pause'];
+    const keybindStartY = startY + 60;
+
+    for (let i = 0; i < keybindLabels.length; i++) {
+      const itemIndex = i + 3; // Offset by volume items
+      const isSelected = itemIndex === menuIndex;
+      const isRebinding = rebindingKey === keybindKeys[i];
+      
+      ctx.fillStyle = isSelected ? PALETTE.yellow : PALETTE.lightGray;
+      ctx.font = '7px monospace';
+      const prefix = isSelected ? '▶ ' : '  ';
+      ctx.fillText(prefix + keybindLabels[i], 25, keybindStartY + i * 11);
+
+      // Key display
+      const keyText = isRebinding ? '[ PRESS KEY ]' : (keybinds[keybindKeys[i]]?.[0] || 'NONE');
+      ctx.fillStyle = isRebinding ? PALETTE.red : (isSelected ? PALETTE.yellow : PALETTE.white);
+      ctx.font = '7px monospace';
+      const keyX = 200;
+      ctx.fillText(keyText, keyX, keybindStartY + i * 11);
+    }
+
+    // Back button
+    const backIndex = 12; // After all keybinds
+    ctx.fillStyle = backIndex === menuIndex ? PALETTE.yellow : PALETTE.lightGray;
+    ctx.font = '8px monospace';
+    const backPrefix = backIndex === menuIndex ? '▶ ' : '  ';
+    ctx.fillText(backPrefix + 'Back', 25, keybindStartY + keybindLabels.length * 11 + 5);
+
+    // Instructions
     ctx.fillStyle = PALETTE.darkGray;
     ctx.font = '6px monospace';
-    ctx.fillText('Left/Right to adjust, Down to next, ESC to back', 60, INTERNAL_H - 15);
+    ctx.fillText('↑↓ Navigate  ←→ Adjust volume  Enter: Rebind key  ESC: Back', 40, INTERNAL_H - 10);
+  }
+
+  drawMenuButton(ctx: CanvasRenderingContext2D): void {
+    // Draw a small gear/menu icon in top-right corner
+    const x = INTERNAL_W - 14;
+    const y = 4;
+    
+    // Background
+    ctx.fillStyle = PALETTE.darkBlue;
+    ctx.fillRect(x - 1, y - 1, 12, 12);
+    ctx.strokeStyle = PALETTE.white;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x - 0.5, y - 0.5, 11, 11);
+    
+    // Hamburger menu icon
+    ctx.fillStyle = PALETTE.white;
+    ctx.fillRect(x + 1, y + 2, 8, 1);
+    ctx.fillRect(x + 1, y + 5, 8, 1);
+    ctx.fillRect(x + 1, y + 8, 8, 1);
+  }
+
+  drawSettingsButton(ctx: CanvasRenderingContext2D, x: number, y: number): void {
+    // Draw a gear icon
+    ctx.fillStyle = PALETTE.darkBlue;
+    ctx.fillRect(x - 1, y - 1, 14, 14);
+    ctx.strokeStyle = PALETTE.lightGray;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x - 0.5, y - 0.5, 13, 13);
+    
+    // Gear shape
+    ctx.fillStyle = PALETTE.lightGray;
+    // Center
+    ctx.fillRect(x + 4, y + 4, 4, 4);
+    // Teeth
+    ctx.fillRect(x + 5, y + 1, 2, 2);
+    ctx.fillRect(x + 5, y + 9, 2, 2);
+    ctx.fillRect(x + 1, y + 5, 2, 2);
+    ctx.fillRect(x + 9, y + 5, 2, 2);
+    // Diagonal teeth
+    ctx.fillRect(x + 2, y + 2, 2, 1);
+    ctx.fillRect(x + 8, y + 2, 2, 1);
+    ctx.fillRect(x + 2, y + 9, 2, 1);
+    ctx.fillRect(x + 8, y + 9, 2, 1);
+    // Center hole
+    ctx.fillStyle = PALETTE.darkBlue;
+    ctx.fillRect(x + 5, y + 5, 2, 2);
   }
 
   drawGameOver(ctx: CanvasRenderingContext2D, menuIndex: number): void {

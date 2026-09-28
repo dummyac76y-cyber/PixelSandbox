@@ -48,6 +48,7 @@ export class Game {
   pauseMenuIndex: number = 0;
   settingsIndex: number = 0;
   gameOverMenuIndex: number = 0;
+  rebindingKey: string | null = null;
 
   // Camera
   camX: number = 0;
@@ -251,6 +252,24 @@ export class Game {
       this.audio.playUIHover();
     }
 
+    // Check for settings button click (bottom-right corner)
+    const mouseX = this.input.getMouseX();
+    const mouseY = this.input.getMouseY();
+    const settingsButtonX = INTERNAL_W - 20;
+    const settingsButtonY = INTERNAL_H - 20;
+    if (this.input.isMouseJustPressed() && 
+        mouseX >= settingsButtonX - 1 && mouseX <= settingsButtonX + 13 &&
+        mouseY >= settingsButtonY - 1 && mouseY <= settingsButtonY + 13) {
+      this.audio.init();
+      this.audio.resume();
+      this.audio.playUIClick();
+      this.prevState = this.state;
+      this.state = GameState.SETTINGS;
+      this.settingsIndex = 0;
+      this.rebindingKey = null;
+      return;
+    }
+
     if (this.input.isKeyJustPressed('Enter') || this.input.isKeyJustPressed('Space')) {
       this.audio.init();
       this.audio.resume();
@@ -269,6 +288,7 @@ export class Game {
           this.prevState = this.state;
           this.state = GameState.SETTINGS;
           this.settingsIndex = 0;
+          this.rebindingKey = null;
           break;
         case 3: // Credits
           this.ui.showNotification('A pixel adventure game', 180);
@@ -388,17 +408,29 @@ export class Game {
 
     // Player input
     const movement = this.input.getMovement();
-    const attackPressed = this.input.isJustPressed('attack') || this.input.isMouseJustPressed();
     const interactPressed = this.input.isJustPressed('interact');
     const inventoryPressed = this.input.isJustPressed('inventory');
     const pausePressed = this.input.isJustPressed('pause');
     const jumpPressed = this.input.isJustPressed('jump');
 
-    if (pausePressed) {
+    // Check for menu button click (top-right corner)
+    const mouseX = this.input.getMouseX();
+    const mouseY = this.input.getMouseY();
+    const menuButtonX = INTERNAL_W - 14;
+    const menuButtonY = 4;
+    const menuButtonClicked = this.input.isMouseJustPressed() && 
+      mouseX >= menuButtonX - 1 && mouseX <= menuButtonX + 11 &&
+      mouseY >= menuButtonY - 1 && mouseY <= menuButtonY + 11;
+
+    // Attack only if not clicking menu button
+    const attackPressed = (this.input.isJustPressed('attack') || this.input.isMouseJustPressed()) && !menuButtonClicked;
+
+    if (pausePressed || menuButtonClicked) {
       this.prevState = this.state;
       this.state = GameState.PAUSED;
       this.pauseMenuIndex = 0;
       this.audio.pauseMusic();
+      if (menuButtonClicked) this.audio.playUIClick();
       return;
     }
 
@@ -790,9 +822,8 @@ export class Game {
         this.transitionToArea(AreaId.VILLAGE_HOUSE, 8 * TILE_SIZE, 8 * TILE_SIZE);
       } else if (tx === 33 && ty === 8) {
         // Merchant's house - just show dialogue
-        this.ui.startDialogue('', ["The shop is outside. Talk to the merchant directly!"], () => {
-          this.state = GameState.PLAYING;
-        });
+        this.ui.startDialogue('', ["The shop is outside. Talk to the merchant directly!"]);
+        this.state = GameState.DIALOGUE;
       } else if (tx === 8 && ty === 24) {
         // Villager's house
         this.audio.playDoorOpen();
@@ -810,6 +841,22 @@ export class Game {
     if (this.input.isJustPressed('pause')) {
       this.state = GameState.PLAYING;
       this.audio.resumeMusic();
+      return;
+    }
+
+    // Check for settings button click (bottom-right corner)
+    const mouseX = this.input.getMouseX();
+    const mouseY = this.input.getMouseY();
+    const settingsButtonX = INTERNAL_W - 20;
+    const settingsButtonY = INTERNAL_H - 20;
+    if (this.input.isMouseJustPressed() && 
+        mouseX >= settingsButtonX - 1 && mouseX <= settingsButtonX + 13 &&
+        mouseY >= settingsButtonY - 1 && mouseY <= settingsButtonY + 13) {
+      this.audio.playUIClick();
+      this.prevState = this.state;
+      this.state = GameState.SETTINGS;
+      this.settingsIndex = 0;
+      this.rebindingKey = null;
       return;
     }
 
@@ -838,6 +885,7 @@ export class Game {
           this.prevState = this.state;
           this.state = GameState.SETTINGS;
           this.settingsIndex = 0;
+          this.rebindingKey = null;
           break;
         case 3: // Main Menu
           this.state = GameState.MAIN_MENU;
@@ -948,16 +996,52 @@ export class Game {
 
   // ---- SETTINGS ----
   updateSettings(): void {
-    const items = 4;
+    const totalItems = 13; // 3 volumes + 9 keybinds + 1 back
+
+    // If rebinding a key, wait for any key press
+    if (this.rebindingKey !== null) {
+      // Check for any key press to rebind
+      const allKeys = [
+        'KeyA', 'KeyB', 'KeyC', 'KeyD', 'KeyE', 'KeyF', 'KeyG', 'KeyH', 'KeyI', 'KeyJ',
+        'KeyK', 'KeyL', 'KeyM', 'KeyN', 'KeyO', 'KeyP', 'KeyQ', 'KeyR', 'KeyS', 'KeyT',
+        'KeyU', 'KeyV', 'KeyW', 'KeyX', 'KeyY', 'KeyZ',
+        'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+        'Space', 'Enter', 'Escape', 'Tab', 'ShiftLeft', 'ShiftRight',
+        'ControlLeft', 'ControlRight', 'AltLeft', 'AltRight',
+        'Digit0', 'Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5',
+        'Digit6', 'Digit7', 'Digit8', 'Digit9',
+      ];
+
+      for (const key of allKeys) {
+        if (this.input.isKeyJustPressed(key)) {
+          // Don't allow ESC to be bound (it's used for back)
+          if (key === 'Escape') {
+            this.rebindingKey = null;
+            break;
+          }
+          // Set the new key binding
+          const action = this.rebindingKey as keyof typeof this.input.bindings;
+          this.input.bindings[action] = [key];
+          this.rebindingKey = null;
+          this.audio.playUIClick();
+          this.saveSettings();
+          break;
+        }
+      }
+      return; // Don't process other input while rebinding
+    }
+
+    // Normal settings navigation
     if (this.input.isKeyJustPressed('ArrowUp')) {
-      this.settingsIndex = (this.settingsIndex - 1 + items) % items;
+      this.settingsIndex = (this.settingsIndex - 1 + totalItems) % totalItems;
       this.audio.playUIHover();
     }
     if (this.input.isKeyJustPressed('ArrowDown')) {
-      this.settingsIndex = (this.settingsIndex + 1) % items;
+      this.settingsIndex = (this.settingsIndex + 1) % totalItems;
       this.audio.playUIHover();
     }
 
+    // Volume controls (indices 0-2)
     if (this.settingsIndex < 3) {
       if (this.input.isKeyJustPressed('ArrowLeft')) {
         this.volumes[this.settingsIndex] = clamp(this.volumes[this.settingsIndex] - 0.1, 0, 1);
@@ -969,7 +1053,17 @@ export class Game {
       }
     }
 
-    if (this.input.isJustPressed('pause') || (this.settingsIndex === 3 && this.input.isKeyJustPressed('Enter'))) {
+    // Keybind selection (indices 3-11)
+    if (this.settingsIndex >= 3 && this.settingsIndex <= 11) {
+      if (this.input.isKeyJustPressed('Enter')) {
+        const keybindKeys = ['up', 'down', 'left', 'right', 'attack', 'jump', 'interact', 'inventory', 'pause'];
+        this.rebindingKey = keybindKeys[this.settingsIndex - 3];
+        this.audio.playUIClick();
+      }
+    }
+
+    // Back button (index 12) or ESC
+    if (this.input.isJustPressed('pause') || (this.settingsIndex === 12 && this.input.isKeyJustPressed('Enter'))) {
       this.state = this.prevState === GameState.PAUSED ? GameState.PAUSED : GameState.MAIN_MENU;
       this.saveSettings();
       this.audio.playUIClick();
@@ -1096,7 +1190,7 @@ export class Game {
         break;
 
       case GameState.SETTINGS:
-        this.ui.drawSettings(ctx, this.settingsIndex, this.volumes);
+        this.ui.drawSettings(ctx, this.settingsIndex, this.volumes, this.input.bindings, this.rebindingKey);
         break;
 
       case GameState.GAME_OVER:
