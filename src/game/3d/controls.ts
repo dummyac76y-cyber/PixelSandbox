@@ -118,10 +118,12 @@ export class Controls3D {
         const direction = wheelAccumulator > 0 ? 1 : -1;
         wheelAccumulator -= direction * threshold;
 
-        if (this.onSlotChange) {
+        if (this.onSlotScroll) {
           // Standard Minecraft mouse wheel direction:
           // Scroll Down (deltaY > 0) -> Next slot (+1)
           // Scroll Up (deltaY < 0) -> Previous slot (-1)
+          this.onSlotScroll(direction);
+        } else if (this.onSlotChange) {
           this.onSlotChange(direction);
         }
       }

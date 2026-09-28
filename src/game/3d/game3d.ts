@@ -90,13 +90,19 @@ export class Game3D {
   }
 
   private bindControls(): void {
-    this.controls.onSlotChange = (slotDeltaOrIndex: number) => {
-      if (slotDeltaOrIndex >= 0 && slotDeltaOrIndex <= 8) {
-        this.inventory.selectedSlot = slotDeltaOrIndex;
-      } else {
-        // Delta (+1 or -1)
-        this.inventory.selectedSlot = (this.inventory.selectedSlot + slotDeltaOrIndex + 9) % 9;
+    this.controls.onSlotChange = (slotIndex: number) => {
+      if (slotIndex >= 0 && slotIndex <= 8) {
+        this.inventory.selectedSlot = slotIndex;
+        this.inventory.save();
+        this.updateHandItem();
+        this.audio.playUIClick();
       }
+    };
+
+    this.controls.onSlotScroll = (delta: number) => {
+      // 1-by-1 hotbar scrolling (delta is +1 or -1)
+      const step = delta > 0 ? 1 : -1;
+      this.inventory.selectedSlot = (this.inventory.selectedSlot + step + 9) % 9;
       this.inventory.save();
       this.updateHandItem();
       this.audio.playUIClick();
