@@ -18,29 +18,22 @@ export interface PlayerControlsInput {
 
 export class Controls3D {
   domElement: HTMLElement;
-
-  // Rotation in radians
   yaw = 0;
   pitch = 0;
   sensitivity = 0.0022;
-
-  // Pointer lock state
   isLocked = false;
   private isMouseDown = false;
   private lastMouseX = 0;
   private lastMouseY = 0;
-
-  // Key states
   private keys: Record<string, boolean> = {};
 
-  // Action pulses
   didMineOnce = false;
   didPlaceOnce = false;
   didPickBlock = false;
   isMiningHeld = false;
 
-  // Hotbar change callback
   onSlotChange?: (slot: number) => void;
+  onSlotScroll?: (delta: number) => void;
   onToggleInventory?: () => void;
   onToggleSettings?: () => void;
   onToggleFly?: () => void;
@@ -52,30 +45,22 @@ export class Controls3D {
   }
 
   private bindEvents(): void {
-    // Pointer lock change
     document.addEventListener('pointerlockchange', () => {
       this.isLocked = document.pointerLockElement === this.domElement;
     });
 
-    // Canvas click to request pointer lock (unless clicking UI)
     this.domElement.addEventListener('click', (e) => {
       if (!this.isLocked && e.target === this.domElement) {
-        try {
-          this.domElement.requestPointerLock();
-        } catch {
-          // Ignore
-        }
+        try { this.domElement.requestPointerLock(); } catch { /* Ignore */ }
       }
     });
 
-    // Mouse move
     window.addEventListener('mousemove', (e) => {
       if (this.isLocked) {
         this.yaw -= e.movementX * this.sensitivity;
         this.pitch -= e.movementY * this.sensitivity;
         this.clampPitch();
       } else if (this.isMouseDown) {
-        // Drag fallback
         const dx = e.clientX - this.lastMouseX;
         const dy = e.clientY - this.lastMouseY;
         this.yaw -= dx * this.sensitivity;
@@ -86,72 +71,82 @@ export class Controls3D {
       }
     });
 
-    // Mouse down
     this.domElement.addEventListener('mousedown', (e) => {
       if (e.button === 0) {
-        // Left click: Mine
         this.isMiningHeld = true;
         this.didMineOnce = true;
       } else if (e.button === 2) {
-        // Right click: Place block
         this.didPlaceOnce = true;
       } else if (e.button === 1) {
-        // Middle click: Pick block
         this.didPickBlock = true;
       }
-
       this.isMouseDown = true;
       this.lastMouseX = e.clientX;
       this.lastMouseY = e.clientY;
     });
 
-    // Prevent context menu on right click
-    this.domElement.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
-    });
+    this.domElement.addEventListener('contextmenu', (e) => e.preventDefault());
 
-    // Mouse up
     window.addEventListener('mouseup', (e) => {
-      if (e.button === 0) {
-        this.isMiningHeld = false;
-      }
+      if (e.button === 0) this.isMiningHeld = false;
       this.isMouseDown = false;
     });
 
-    // Mouse wheel for hotbar selection (debounced to prevent trackpad/inertial wheel skipping)
+    // Hotbar wheel: scroll exactly one slot per wheel direction, including
+    // high-resolution mouse wheels and trackpads, without browser scrolling.
+    let wheelAccumulator = 0;
     let lastWheelTime = 0;
-    window.addEventListener(
-      'wheel',
-      (e) => {
-        const now = performance.now();
-        if (now - lastWheelTime < 65) return;
-        if (this.onSlotChange) {
-          const delta = Math.sign(e.deltaY);
-          if (delta > 0) {
-            lastWheelTime = now;
-            this.onSlotChange(1); // next slot
-          } else if (delta < 0) {
-            lastWheelTime = now;
-            this.onSlotChange(-1); // prev slot
-          }
-        }
-      },
-      { passive: true }
-    );
+    window.addEventListener('wheel', (e) => {
+      // Do not steal normal page scrolling when the pointer is over an input/UI control.
+      const target = e.target as HTMLElement | null;
+      if (target && (target.closest('input, textarea, select, button, [contenteditable="true"]') || target.closest('[data-no-hotbar-wheel]'))) {
+        return;
+      }
 
-    // Keyboard events
+      // The game canvas is the intended target. If pointer lock is active, always accept it.
+      // Otherwise only handle wheel while the pointer is over the game canvas.
+      const overGame = e.target === this.domElement || this.domElement.contains(e.target as Node);
+      if (!this.isLocked && !overGame) return;
+
+      e.preventDefault();
+
+      // Normalize pixel/line/page wheel modes to a stable sign.
+      const rawDelta = e.deltaMode === WheelEvent.DOM_DELTA_LINE ? e.deltaY * 16
+        : e.deltaMode === WheelEvent.DOM_DELTA_PAGE ? e.deltaY * window.innerHeight
+        : e.deltaY;
+      if (!rawDelta) return;
+
+      const now = performance.now();
+      const minInterval = 35;
+      if (now - lastWheelTime < minInterval) {
+        wheelAccumulator += rawDelta;
+      } else {
+        wheelAccumulator += rawDelta;
+      }
+
+      // Typical wheel notch is around 100px; trackpads may produce many small events.
+      // Convert accumulated motion into one or more intentional slot steps.
+      const threshold = 45;
+      while (Math.abs(wheelAccumulator) >= threshold) {
+        const direction = wheelAccumulator > 0 ? 1 : -1;
+        wheelAccumulator -= direction * threshold;
+        if (this.onSlotScroll) {
+          this.onSlotScroll(direction);
+        }
+        lastWheelTime = now;
+      }
+    }, { passive: false });
+
     window.addEventListener('keydown', (e) => {
       this.keys[e.code] = true;
 
-      // Number keys 1-9
       if (e.code.startsWith('Digit')) {
         const digit = parseInt(e.code.replace('Digit', ''), 10);
         if (digit >= 1 && digit <= 9 && this.onSlotChange) {
-          this.onSlotChange(digit - 1); // 0-based
+          this.onSlotChange(digit - 1);
         }
       }
 
-      // Hotkeys
       if (e.code === 'KeyE' || e.code === 'KeyI') {
         if (this.onToggleInventory) this.onToggleInventory();
       }
@@ -164,24 +159,24 @@ export class Controls3D {
       if (e.code === 'KeyV') {
         if (this.onToggleCameraMode) this.onToggleCameraMode();
       }
-      if (e.code === 'KeyR') {
-        this.didPickBlock = true;
-      }
-      if (e.code === 'KeyQ') {
-        this.didMineOnce = true;
-      }
+      if (e.code === 'KeyR') this.didPickBlock = true;
+      if (e.code === 'KeyQ') this.didMineOnce = true;
     });
 
     window.addEventListener('keyup', (e) => {
       this.keys[e.code] = false;
     });
 
-    // Window blur: reset keys
     window.addEventListener('blur', () => {
       this.keys = {};
       this.isMiningHeld = false;
       this.isMouseDown = false;
+      this.wheelReset();
     });
+  }
+
+  private wheelReset(): void {
+    // Intentionally empty hook; wheel state is local to the event handler.
   }
 
   private clampPitch(): void {
@@ -189,11 +184,9 @@ export class Controls3D {
     this.pitch = Math.max(-maxPitch, Math.min(maxPitch, this.pitch));
   }
 
-  // Get current movement inputs
   getInput(): PlayerControlsInput {
     let forward = 0;
     let strafe = 0;
-
     if (this.keys['KeyW'] || this.keys['ArrowUp']) forward += 1;
     if (this.keys['KeyS'] || this.keys['ArrowDown']) forward -= 1;
     if (this.keys['KeyA'] || this.keys['ArrowLeft']) strafe -= 1;
@@ -203,12 +196,9 @@ export class Controls3D {
     const sprint = !!(this.keys['ShiftLeft'] || this.keys['ShiftRight']);
     const flyUp = jump;
     const flyDown = sprint;
-
     const didMine = this.didMineOnce;
     const didPlace = this.didPlaceOnce;
     const didPick = this.didPickBlock;
-
-    // Reset pulses
     this.didMineOnce = false;
     this.didPlaceOnce = false;
     this.didPickBlock = false;
@@ -227,12 +217,10 @@ export class Controls3D {
     };
   }
 
-  // Apply camera rotation to camera
   applyToCamera(camera: THREE.Camera): void {
     camera.rotation.set(this.pitch, this.yaw, 0, 'YXZ');
   }
 
-  // Get forward look vector
   getLookDirection(): { x: number; y: number; z: number } {
     const cosPitch = Math.cos(this.pitch);
     const dirX = -Math.sin(this.yaw) * cosPitch;
